@@ -1,4 +1,6 @@
-import _ from 'lodash';
+import assign from 'lodash/assign';
+import find from 'lodash/find';
+import merge from 'lodash/merge';
 import moment from 'moment';
 import { authWithHeaders } from '../../middlewares/auth';
 import {
@@ -25,6 +27,7 @@ import {
   moveTask,
   setNextDue,
   requiredGroupFields,
+  normalizeDailyStartDate,
 } from '../../libs/tasks/utils';
 import common from '../../../common';
 import { apiError } from '../../libs/apiError';
@@ -327,16 +330,6 @@ api.createChallengeTasks = {
 
     // If adding tasks to a challenge -> sync users
     if (challenge) challenge.addTasks(tasks);
-
-    tasks.forEach(task => {
-      res.analytics.track('challenge task created', {
-        uuid: user._id,
-        hitType: 'event',
-        category: 'behavior',
-        taskType: task.type,
-        challengeID: challenge._id,
-      });
-    });
   },
 };
 
@@ -645,7 +638,7 @@ api.updateTask = {
       sanitizedObj = Tasks.Task.sanitize(updatedTaskObj);
     }
 
-    _.assign(task, sanitizedObj);
+    assign(task, sanitizedObj);
 
     // console.log(task.modifiedPaths(), task.toObject().repeat === tep)
     // repeat is always among modifiedPaths because mongoose changes
@@ -656,13 +649,10 @@ api.updateTask = {
       task.group.managerNotes = sanitizedObj.managerNotes;
     }
 
-    // For daily tasks, update start date based on timezone to maintain consistency
     if (task.type === 'daily'
         && task.startDate
     ) {
-      task.startDate = moment(task.startDate).utcOffset(
-        -user.preferences.timezoneOffset,
-      ).startOf('day').toDate();
+      task.startDate = normalizeDailyStartDate(task.startDate, user);
 
       // If the daily task was set to repeat monthly on a day of the month, and the start date was
       // updated, the task will then need to be updated to repeat on the same day of the month as
@@ -694,16 +684,6 @@ api.updateTask = {
       taskActivityWebhook.send(user, {
         type: 'updated',
         task: savedTask,
-      });
-    }
-
-    if (group) {
-      res.analytics.track('task edit', {
-        uuid: user._id,
-        hitType: 'event',
-        category: 'behavior',
-        taskType: task.type,
-        groupID: group._id,
       });
     }
   },
@@ -751,7 +731,11 @@ api.updateTask = {
 api.scoreTask = {
   method: 'POST',
   url: '/tasks/:taskId/score/:direction',
-  middlewares: [authWithHeaders()],
+  middlewares: [authWithHeaders({
+    userFieldsToInclude: ['achievements', 'guilds', 'items.eggs', 'items.food',
+      'items.gear.equipped', 'items.hatchingPotions', 'items.lastDrop', 'items.quests', 'party',
+      'purchased.plan', 'stats', 'tasksOrder', 'webhooks'],
+  })],
   async handler (req, res) {
     // Parameters are validated in scoreTasks
 
@@ -761,7 +745,7 @@ api.scoreTask = {
 
     const userStats = user.stats.toJSON();
 
-    const resJsonData = _.assign({
+    const resJsonData = assign({
       delta: taskResponse.delta,
       _tmp: user._tmp,
     }, userStats);
@@ -966,7 +950,7 @@ api.scoreCheckListItem = {
     }
     if (task.type !== 'daily' && task.type !== 'todo') throw new BadRequest(res.t('checklistOnlyDailyTodo'));
 
-    const item = _.find(task.checklist, { id: req.params.itemId });
+    const item = find(task.checklist, { id: req.params.itemId });
 
     if (!item) throw new NotFound(res.t('checklistItemNotFound'));
     item.completed = !item.completed;
@@ -1027,10 +1011,10 @@ api.updateChecklistItem = {
     verifyTaskModification(task, user, group, challenge, res);
     if (task.type !== 'daily' && task.type !== 'todo') throw new BadRequest(res.t('checklistOnlyDailyTodo'));
 
-    const item = _.find(task.checklist, { id: req.params.itemId });
+    const item = find(task.checklist, { id: req.params.itemId });
     if (!item) throw new NotFound(res.t('checklistItemNotFound'));
 
-    _.merge(item, Tasks.Task.sanitizeChecklist(req.body));
+    merge(item, Tasks.Task.sanitizeChecklist(req.body));
     const savedTask = await task.save();
 
     res.respond(200, savedTask);

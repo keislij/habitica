@@ -226,7 +226,7 @@
 </template>
 
 <style lang="scss" scoped>
-  @import '~@/assets/scss/colors.scss';
+  @import '@/assets/scss/colors.scss';
 
   .page-header.btn-flat {
     background: transparent;
@@ -318,13 +318,18 @@
     color: $gray-50;
   }
 
+  td span {
+    line-break: anywhere;
+  }
+
   th, td {
     padding-top: 0.35rem !important;
     padding-bottom: 0.35rem !important;
   }
 
   .timestamp-column, .action-column  {
-    width: 20%;
+    width: 27%;
+
   }
 
   .amount-column {
@@ -332,7 +337,7 @@
   }
 
   .note-column {
-    width: 50%;
+    width: 35%;
   }
 
   .entry-action {
@@ -344,10 +349,10 @@
 
 <script>
 import moment from 'moment';
-import svgGem from '@/assets/svg/gem.svg';
-import svgGemRed from '@/assets/svg/gem-red.svg';
-import svgHourglass from '@/assets/svg/hourglass.svg';
-import svgHourglassRed from '@/assets/svg/hourglass-red.svg';
+import svgGem from '@/assets/svg/gem.svg?raw';
+import svgGemRed from '@/assets/svg/gem-red.svg?raw';
+import svgHourglass from '@/assets/svg/hourglass.svg?raw';
+import svgHourglassRed from '@/assets/svg/hourglass-red.svg?raw';
 import markdownDirective from '@/directives/markdown';
 
 export default {

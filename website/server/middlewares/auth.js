@@ -2,7 +2,9 @@ import moment from 'moment';
 import nconf from 'nconf';
 import url from 'url';
 import {
+  InvalidCredentialsError,
   NotAuthorized,
+  BadRequest,
 } from '../libs/errors';
 import {
   model as User,
@@ -11,9 +13,11 @@ import gcpStackdriverTracer from '../libs/gcpTraceAgent';
 import common from '../../common';
 import { getLanguageFromUser } from '../libs/language';
 
+const ENFORCE_CLIENT_HEADER = nconf.get('ENFORCE_CLIENT_HEADER') === 'true';
+
 const OFFICIAL_PLATFORMS = ['habitica-web', 'habitica-ios', 'habitica-android'];
 const COMMUNITY_MANAGER_EMAIL = nconf.get('EMAILS_COMMUNITY_MANAGER_EMAIL');
-const USER_FIELDS_ALWAYS_LOADED = ['_id', 'notifications', 'preferences', 'auth', 'flags', 'permissions'];
+const USER_FIELDS_ALWAYS_LOADED = ['_id', '_v', 'notifications', 'preferences', 'auth', 'flags', 'permissions'];
 
 function getUserFields (options, req) {
   // A list of user fields that aren't needed for the route and are not loaded from the db.
@@ -36,8 +40,10 @@ function getUserFields (options, req) {
   const { userFields } = req.query;
   if (!userFields || urlPath !== '/user') return '';
 
-  const userFieldOptions = userFields.split(',');
+  let userFieldOptions = userFields.split(',');
   if (userFieldOptions.length === 0) return '';
+
+  userFieldOptions = userFieldOptions.filter(field => USER_FIELDS_ALWAYS_LOADED.indexOf(field.split('.')[0]) === -1);
 
   return userFieldOptions.concat(USER_FIELDS_ALWAYS_LOADED).join(' ');
 }
@@ -59,6 +65,11 @@ export function authWithHeaders (options = {}) {
     const apiToken = req.header('x-api-key');
     const client = req.header('x-client');
     const optional = options.optional || false;
+    const leanUser = options.leanUser || false;
+
+    if (ENFORCE_CLIENT_HEADER && !client) {
+      return next(new BadRequest(res.t('missingClientHeader')));
+    }
 
     if (!userId || !apiToken) {
       if (optional) return next();
@@ -73,13 +84,17 @@ export function authWithHeaders (options = {}) {
       fields = `${fields} apiToken`;
     }
 
-    const findPromise = fields ? User.findOne(userQuery).select(fields) : User.findOne(userQuery);
+    let findPromise = fields ? User.findOne(userQuery).select(fields) : User.findOne(userQuery);
+
+    if (leanUser) {
+      findPromise = findPromise.lean();
+    }
 
     return findPromise
       .exec()
       .then(user => {
         if (!user || apiToken !== user.apiToken) {
-          throw new NotAuthorized(res.t('invalidCredentials'));
+          throw new InvalidCredentialsError(res.t('invalidCredentials'));
         }
 
         if (user.auth.blocked) {
@@ -90,6 +105,7 @@ export function authWithHeaders (options = {}) {
           throw new NotAuthorized(common.i18n.t('accountSuspended', {
             communityManagerEmail: COMMUNITY_MANAGER_EMAIL,
             userId: user._id,
+            username: user.auth.local.username,
           }, language));
         }
 
@@ -133,4 +149,16 @@ export function authWithSession (req, res, next) {
       return next();
     })
     .catch(next);
+}
+
+export function chatPrivilegesRequired () {
+  return function chatPrivilegesRequiredHandler (req, res, next) {
+    const { user } = res.locals;
+
+    if (user.flags.chatRevoked) {
+      throw new NotAuthorized(res.t('chatPrivilegesRevoked'));
+    }
+
+    return next();
+  };
 }

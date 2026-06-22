@@ -1,7 +1,6 @@
 <template>
   <div
     class="notifications"
-    :class="notificationsTopPosClass"
     :style="{'--current-scrollY': notificationTopY}"
   >
     <transition-group
@@ -27,7 +26,7 @@
     position: fixed;
     right: 10px;
     width: 350px;
-    z-index: 9999; // to keep it above modal overlays
+    z-index: 999; // to keep it above modal overlays
 
     top: var(--current-scrollY);
 
@@ -97,6 +96,7 @@ export default {
       notificationTopY: '0px',
       preventMultipleWatchExecution: false,
       eventPromoBannerHeight: null,
+      privacyBannerHeight: null,
       sleepingBannerHeight: null,
       warningBannerHeight: null,
     };
@@ -104,7 +104,6 @@ export default {
   computed: {
     ...mapState({
       notificationStore: 'notificationStore',
-      userSleeping: 'user.data.preferences.sleep',
       currentEventList: 'worldState.data.currentEventList',
     }),
     currentEvent () {
@@ -113,20 +112,12 @@ export default {
     isEventActive () {
       return Boolean(this.currentEvent?.event);
     },
-    notificationsTopPosClass () {
-      const base = 'notifications-top-pos-';
-      let modifier = '';
-
-      if (this.userSleeping) {
-        modifier = 'sleeping';
-      } else {
-        modifier = 'normal';
-      }
-
-      return `${base}${modifier} scroll-${this.scrollY}`;
-    },
     notificationBannerHeight () {
       let scrollPosToCheck = 56;
+
+      if (this.privacyBannerHeight) {
+        scrollPosToCheck += this.privacyBannerHeight;
+      }
 
       if (this.warningBannerHeight) {
         scrollPosToCheck += this.warningBannerHeight;
@@ -176,6 +167,9 @@ export default {
   },
   async mounted () {
     window.addEventListener('scroll', this.updateScrollY, {
+      passive: true,
+    });
+    window.addEventListener('resize', this.updateBannerHeightAndScrollY, {
       passive: true,
     });
 
@@ -353,6 +347,7 @@ export default {
 
     updateBannerHeightAndScrollY () {
       this.updateEventBannerHeight();
+      this.privacyBannerHeight = document.getElementById('privacy-banner')?.getBoundingClientRect().height || 0;
       this.warningBannerHeight = getBannerHeight('chat-warning');
       this.sleepingBannerHeight = getBannerHeight('damage-paused');
       this.updateScrollY();

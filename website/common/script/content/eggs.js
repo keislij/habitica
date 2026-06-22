@@ -411,6 +411,42 @@ const quests = {
     adjective: t('questEggCrabAdjective'),
     canBuy: hasQuestAchievementFunction('crab'),
   },
+  Raccoon: {
+    text: t('questEggRaccoonText'),
+    mountText: t('questEggRaccoonMountText'),
+    adjective: t('questEggRaccoonAdjective'),
+    canBuy: hasQuestAchievementFunction('raccoon'),
+  },
+  Dog: {
+    text: t('questEggDogText'),
+    mountText: t('questEggDogMountText'),
+    adjective: t('questEggDogAdjective'),
+    canBuy: hasQuestAchievementFunction('dog'),
+  },
+  Cat: {
+    text: t('questEggCatText'),
+    mountText: t('questEggCatMountText'),
+    adjective: t('questEggCatAdjective'),
+    canBuy: hasQuestAchievementFunction('cat'),
+  },
+  Otter: {
+    text: t('questEggOtterText'),
+    mountText: t('questEggOtterMountText'),
+    adjective: t('questEggOtterAdjective'),
+    canBuy: hasQuestAchievementFunction('otter'),
+  },
+  Alpaca: {
+    text: t('questEggAlpacaText'),
+    mountText: t('questEggAlpacaMountText'),
+    adjective: t('questEggAlpacaAdjective'),
+    canBuy: hasQuestAchievementFunction('alpaca'),
+  },
+  Platypus: {
+    text: t('questEggPlatypusText'),
+    mountText: t('questEggPlatypusMountText'),
+    adjective: t('questEggPlatypusAdjective'),
+    canBuy: hasQuestAchievementFunction('platypus'),
+  },
 };
 
 applyEggDefaults(drops, {

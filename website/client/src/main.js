@@ -6,24 +6,20 @@ import {
   PopoverPlugin,
   FormPlugin,
   FormInputPlugin,
+  FormRadioPlugin,
   TooltipPlugin,
   NavbarPlugin,
   CollapsePlugin,
 } from 'bootstrap-vue';
-import Fragment from 'vue-fragment';
 import AppComponent from './app';
-import {
-  setup as setupAnalytics,
-} from '@/libs/analytics';
 import { setUpLogging } from '@/libs/logging';
 import router from './router/index';
 import getStore from './store';
 import StoreModule from './libs/store';
 import './filters/registerGlobals';
 import i18n from './libs/i18n';
-import 'smartbanner.js/dist/smartbanner';
 
-const IS_PRODUCTION = process.env.NODE_ENV === 'production'; // eslint-disable-line no-process-env
+const IS_PRODUCTION = import.meta.env.NODE_ENV === 'production'; // eslint-disable-line no-process-env
 
 // Configure Vue global options, see https://vuejs.org/v2/api/#Global-Config
 
@@ -43,16 +39,15 @@ Vue.use(DropdownPlugin);
 Vue.use(PopoverPlugin);
 Vue.use(FormPlugin);
 Vue.use(FormInputPlugin);
+Vue.use(FormRadioPlugin);
 Vue.use(TooltipPlugin);
 Vue.use(NavbarPlugin);
 Vue.use(CollapsePlugin);
-Vue.use(Fragment.Plugin);
 
 setUpLogging();
-setupAnalytics(); // just create queues for analytics, no scripts loaded at this time
 const store = getStore();
 
-if (process.env.TIME_TRAVEL_ENABLED === 'true') {
+if (import.meta.env.TIME_TRAVEL_ENABLED === 'true') {
   (async () => {
     const sinon = await import('sinon');
     if (axios.defaults.headers.common['x-api-user']) {
