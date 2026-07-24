@@ -42,15 +42,16 @@
 
   .attributes-group {
     border-radius: 4px;
-    // unless we have a way to give a popover an id or class, it needs expand the attributes area
+    // unless we have a way to give a popover an id or class, it needs to expand the attributes area
     margin: -12px -16px;
-    display:flex;
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1px;
   }
 
   .popover-content-attr {
     font-weight: bold;
-    width: calc(50% - 1px);
+    width: fit-content;
     background-color: $gray-50;
 
     .attr-str, .attr-int {
@@ -62,30 +63,22 @@
       padding-bottom: 0.75rem;
       padding-top: 0.5rem;
     }
-
-    &:nth-of-type(even) {
-      margin-left: 1px;
-    }
-
-    &:nth-child(1), &:nth-child(2) {
-      margin-bottom: 1px;
-    }
   }
 
   .group-content {
-    display: inline-flex;
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: auto auto;
+    column-gap: 2rem;
+    justify-content: start;
     padding: 4px 12px;
-    width: 100%;
+    width: fit-content;
   }
 
   .popover-content-attr-cell {
-    width: 65%;
     text-align: left;
 
     &:nth-of-type(even) {
       text-align: right;
-      width: 35%;
     }
 
     &.key {
@@ -130,11 +123,6 @@
 
     .popover-content-attr {
       background-color: #f4f4f4;
-
-      &:nth-of-type(even) {
-        margin-left: 1px;
-        width: 50%;
-      }
     }
 
     .popover-content-attr-cell {

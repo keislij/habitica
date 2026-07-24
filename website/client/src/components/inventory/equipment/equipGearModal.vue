@@ -78,22 +78,26 @@
 
   #equipgear-modal {
     @include centeredModal();
+    width: fit-content;
+    left: 0;
+    right: 0;
+    margin: auto;
 
     .modal-content {
       border-radius: 8px;
       box-shadow: 0 14px 28px 0 #1a181d3d, 0 10px 10px 0 #1a181d47;
+      width: fit-content;
     }
 
     .modal-body {
       padding: 2rem 1.5rem;
-    }
-
-    .dialog-close {
-
+      width: fit-content;
     }
 
     .modal-dialog {
-      width: 330px;
+      width: fit-content;
+      min-width: 330px;
+      max-width: 90vw;
 
       .text {
         min-height: 0;
@@ -109,6 +113,7 @@
 
     .content {
       text-align: center;
+      width: fit-content;
     }
 
     .item-wrapper {
@@ -116,7 +121,8 @@
     }
 
     .inner-content {
-      width: 282px;
+      width: fit-content;
+      min-width: 282px;
     }
 
     .classTag {
