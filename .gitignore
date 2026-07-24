@@ -1,0 +1,9 @@
+/habitica/
+/habitica-wiki/
+/.local/
+/logs/
+/tmp/
+.env
+.env.*
+!.env.example
+
