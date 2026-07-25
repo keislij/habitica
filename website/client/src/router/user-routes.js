@@ -41,6 +41,16 @@ export const USER_ROUTES = {
           name: 'subscription',
           path: 'subscription',
           component: Subscription,
+          beforeEnter (to, from, next) {
+            // Private self-host: there is nothing to subscribe to. The route is
+            // GUARDED rather than removed because handleRedirect.js still pushes
+            // { name: 'subscription' }; deleting it would make vue-router throw.
+            if (import.meta.env.SELF_HOST_UNLOCK_ALL === 'true') {
+              next({ name: 'general' });
+              return;
+            }
+            next();
+          },
         },
         {
           name: 'transactions',

@@ -7,6 +7,7 @@ import * as count from '../count';
 import isPinned from './isPinned';
 import isFreeRebirth from './isFreeRebirth';
 import getOfficialPinnedItems from './getOfficialPinnedItems';
+import selfhostUnlockAll from './selfhostUnlock';
 
 import { ALWAYS_AVAILABLE_CUSTOMIZATIONS } from '../content/constants/schedule';
 
@@ -327,7 +328,9 @@ export default function getItemInfo (user, type, item, officialPinnedItems, lang
         currency: 'gold',
         path: 'special.gems',
         pinType: 'gem',
-        locked: !user.purchased.plan.customerId,
+        // Private self-host: the server-side gold->gem gate is lifted by the
+        // unlock flag, so the client must not render the tile as locked.
+        locked: !selfhostUnlockAll() && !user.purchased.plan.customerId,
       };
       break;
     }

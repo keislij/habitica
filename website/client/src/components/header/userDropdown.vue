@@ -57,6 +57,7 @@
         {{ $t('settings') }}
       </router-link>
       <router-link
+        v-if="!$unlockAll"
         class="topbar-dropdown-item dropdown-item dropdown-separated"
         :to="{name: 'subscription'}"
       >
