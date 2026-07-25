@@ -18,4 +18,13 @@ describe('self-host production contracts', () => {
     expect(dockerfile).to.include('res.statusCode===200');
     expect(dockerfile).not.to.include("fetch('http://127.0.0.1:3000/api/v3/status')");
   });
+
+  it('runs the web image with a stable numeric non-root identity', () => {
+    expect(dockerfile).to.include(
+      'COPY --from=build --chown=65532:65532 /build/website/client/dist /srv',
+    );
+    expect(dockerfile).to.include('USER 65532:65532');
+    expect(dockerfile).not.to.include('--chown=caddy:caddy');
+    expect(dockerfile).not.to.include('USER caddy');
+  });
 });

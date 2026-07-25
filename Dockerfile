@@ -46,7 +46,7 @@ RUN npm pkg set scripts.postinstall="echo skipping repository postinstall during
 FROM ${NODE_RUNTIME_IMAGE} AS server
 
 ARG BUILD_DATE
-ARG VERSION=5.48.7-selfhost.1
+ARG VERSION=5.48.7-selfhost.2
 ARG VCS_REF
 LABEL org.opencontainers.image.created="${BUILD_DATE}" \
   org.opencontainers.image.description="Private self-hosted Habitica application server" \
@@ -80,7 +80,7 @@ CMD ["node", "website/transpiled-babel/index.js"]
 FROM ${CADDY_IMAGE} AS web
 
 ARG BUILD_DATE
-ARG VERSION=5.48.7-selfhost.1
+ARG VERSION=5.48.7-selfhost.2
 ARG VCS_REF
 LABEL org.opencontainers.image.created="${BUILD_DATE}" \
   org.opencontainers.image.description="Private self-hosted Habitica web frontend" \
@@ -96,9 +96,9 @@ ENV BACKEND_SERVER=habitica-server:3000 \
   XDG_DATA_HOME=/tmp/caddy-data
 
 COPY ops/Caddyfile /etc/caddy/Caddyfile
-COPY --from=build --chown=caddy:caddy /build/website/client/dist /srv
+COPY --from=build --chown=65532:65532 /build/website/client/dist /srv
 
-USER caddy
+USER 65532:65532
 EXPOSE 8080
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
   CMD ["wget", "--quiet", "--spider", "http://127.0.0.1:8080/healthz"]

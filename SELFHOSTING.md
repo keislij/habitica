@@ -11,14 +11,14 @@ linux/amd64 targets:
 
 ```sh
 docker buildx build --platform linux/amd64 --target server \
-  --build-arg VERSION=5.48.7-selfhost.1 \
+  --build-arg VERSION=5.48.7-selfhost.2 \
   --build-arg VCS_REF="$(git rev-parse HEAD)" \
-  -t habitica-server:5.48.7-selfhost.1 .
+  -t habitica-server:5.48.7-selfhost.2 .
 
 docker buildx build --platform linux/amd64 --target web \
-  --build-arg VERSION=5.48.7-selfhost.1 \
+  --build-arg VERSION=5.48.7-selfhost.2 \
   --build-arg VCS_REF="$(git rev-parse HEAD)" \
-  -t habitica-web:5.48.7-selfhost.1 .
+  -t habitica-web:5.48.7-selfhost.2 .
 ```
 
 `config.selfhost-build.json` contains public client-build values only.
