@@ -4,7 +4,9 @@
 	@untrusted {
 		not remote_ip 127.0.0.1 {$EDGE_PROXY_IP:10.10.3.150}
 	}
-	respond @untrusted 403
+	handle @untrusted {
+		respond 403
+	}
 
 	header {
 		-Server
@@ -16,7 +18,10 @@
 		X-Frame-Options "SAMEORIGIN"
 	}
 
-	respond /healthz 200
+	@health path /healthz
+	handle @health {
+		respond 200
+	}
 
 	@immutable path /assets/*
 	header @immutable Cache-Control "public, max-age=31536000, immutable"

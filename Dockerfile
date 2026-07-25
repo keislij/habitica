@@ -46,7 +46,7 @@ RUN npm pkg set scripts.postinstall="echo skipping repository postinstall during
 FROM ${NODE_RUNTIME_IMAGE} AS server
 
 ARG BUILD_DATE
-ARG VERSION=5.48.7-selfhost.3
+ARG VERSION=5.48.7-selfhost.4
 ARG VCS_REF
 LABEL org.opencontainers.image.created="${BUILD_DATE}" \
   org.opencontainers.image.description="Private self-hosted Habitica application server" \
@@ -80,7 +80,7 @@ CMD ["node", "website/transpiled-babel/index.js"]
 FROM ${CADDY_IMAGE} AS web
 
 ARG BUILD_DATE
-ARG VERSION=5.48.7-selfhost.3
+ARG VERSION=5.48.7-selfhost.4
 ARG VCS_REF
 LABEL org.opencontainers.image.created="${BUILD_DATE}" \
   org.opencontainers.image.description="Private self-hosted Habitica web frontend" \

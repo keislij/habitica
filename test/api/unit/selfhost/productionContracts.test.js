@@ -12,6 +12,29 @@ describe('self-host production contracts', () => {
     expect(caddyfile).to.include('header_up X-Forwarded-Proto https');
   });
 
+  it('orders the peer gate and local health before static files and the backend proxy', () => {
+    const peerGateHandler = caddyfile.indexOf('handle @untrusted {');
+    const healthMatcher = caddyfile.indexOf('@health path /healthz');
+    const healthHandler = caddyfile.indexOf('handle @health {');
+    const staticHandler = caddyfile.indexOf('handle @static {');
+    const backendHandler = caddyfile.lastIndexOf('\n\thandle {');
+
+    expect(caddyfile).to.match(
+      /@untrusted \{[\s\S]+?\}\s+handle @untrusted \{\s+respond 403\s+\}/,
+    );
+    expect(caddyfile).to.match(
+      /@health path \/healthz\s+handle @health \{\s+respond 200\s+\}/,
+    );
+    expect(peerGateHandler).to.be.greaterThan(-1);
+    expect(healthMatcher).to.be.greaterThan(-1);
+    expect(healthMatcher).to.be.greaterThan(peerGateHandler);
+    expect(healthHandler).to.be.greaterThan(healthMatcher);
+    expect(staticHandler).to.be.greaterThan(healthHandler);
+    expect(backendHandler).to.be.greaterThan(staticHandler);
+    expect(caddyfile).not.to.include('respond @untrusted 403');
+    expect(caddyfile).not.to.include('respond /healthz 200');
+  });
+
   it('checks the server locally without following an HTTPS redirect', () => {
     expect(dockerfile).to.include("path:'/api/v3/status'");
     expect(dockerfile).to.include("'X-Forwarded-Proto':'https'");
