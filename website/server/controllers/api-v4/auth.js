@@ -1,12 +1,82 @@
 import {
   authWithHeaders,
+  authWithSession,
 } from '../../middlewares/auth';
 import * as authLib from '../../libs/auth';
+import * as oidcLib from '../../libs/auth/oidc';
 import { model as User } from '../../models/user';
 import { verifyUsername } from '../../libs/user/validation';
 import { isRestrictedEmailDomain } from '../../libs/auth/utils';
 
 const api = {};
+
+// Self-host OIDC (authentik) — browser-only login path. Mobile apps, API
+// tokens, and integrations keep using local auth; see libs/auth/oidc.js.
+
+// Feature probe for the web client's login form.
+api.oidcEnabled = {
+  method: 'GET',
+  url: '/user/auth/oidc/enabled',
+  async handler (req, res) {
+    res.respond(200, { enabled: oidcLib.oidcEnabled() });
+  },
+};
+
+// Starts the authorization-code + PKCE flow (redirects to the IdP).
+api.oidcBegin = {
+  method: 'GET',
+  url: '/user/auth/oidc',
+  async handler (req, res) {
+    await oidcLib.beginLogin(req, res);
+  },
+};
+
+// Binds an SSO identity to the CURRENTLY AUTHENTICATED account. Linking is the
+// only way a subject becomes usable for login, which is why it requires local
+// credentials — see the security model in libs/auth/oidc.js.
+// authWithSession (not authWithHeaders): starting the flow is a top-level
+// browser navigation, which cannot carry x-api-* headers. The SPA's normal
+// API traffic already establishes the session, and header auth still works.
+api.oidcBeginLink = {
+  method: 'GET',
+  middlewares: [authWithSession],
+  url: '/user/auth/oidc/link',
+  async handler (req, res) {
+    await oidcLib.beginLink(req, res, res.locals.user);
+  },
+};
+
+api.oidcUnlink = {
+  method: 'DELETE',
+  middlewares: [authWithHeaders()],
+  url: '/user/auth/oidc/link',
+  async handler (req, res) {
+    await oidcLib.unlink(res.locals.user);
+    res.respond(200, {});
+  },
+};
+
+// IdP redirect target; on success stores the user in the cookie session and
+// bounces to /login?sso=1 where the SPA collects its API credentials. Unlinked
+// and blocked identities get the same /login?sso=denied outcome so the callback
+// is not an account-existence oracle.
+api.oidcCallback = {
+  method: 'GET',
+  url: '/user/auth/oidc/callback',
+  async handler (req, res) {
+    await oidcLib.handleCallback(req, res);
+  },
+};
+
+// One-shot session -> {id, apiToken} hand-off consumed by the SPA.
+api.oidcCredentials = {
+  method: 'GET',
+  url: '/user/auth/oidc/credentials',
+  async handler (req, res) {
+    const credentials = await oidcLib.sessionCredentials(req, res);
+    res.respond(200, credentials);
+  },
+};
 
 api.verifyUsername = {
   method: 'POST',

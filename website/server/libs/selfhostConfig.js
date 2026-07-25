@@ -41,6 +41,20 @@ function validateSelfhostConfig () {
     errors.push('SELF_HOST_REGISTRATION_ENABLED must be explicitly true or false');
   }
 
+  const oidcEnabled = nconf.get('OIDC_ENABLED');
+  if (oidcEnabled !== undefined && oidcEnabled !== null && oidcEnabled !== ''
+    && !['true', 'false', true, false].includes(oidcEnabled)) {
+    errors.push('OIDC_ENABLED must be true or false when set');
+  }
+  if (oidcEnabled === true || oidcEnabled === 'true') {
+    const issuer = nconf.get('OIDC_ISSUER');
+    if (!issuer || !String(issuer).startsWith('https://')) {
+      errors.push('OIDC_ISSUER must be an https URL when OIDC is enabled');
+    }
+    if (!hasValue('OIDC_CLIENT_ID')) errors.push('OIDC_CLIENT_ID is required when OIDC is enabled');
+    if (!hasValue('OIDC_CLIENT_SECRET')) errors.push('OIDC_CLIENT_SECRET is required when OIDC is enabled');
+  }
+
   const emailDelivery = nconf.get('EMAIL_DELIVERY');
   if (!['disabled', 'smtp', 'worker'].includes(emailDelivery)) {
     errors.push('EMAIL_DELIVERY must be disabled, smtp, or worker');

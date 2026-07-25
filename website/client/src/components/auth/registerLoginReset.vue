@@ -20,6 +20,21 @@
           ></a>
         </div>
       </div>
+      <div
+        v-if="oidcAvailable && !registering"
+        class="form-group"
+      >
+        <div>
+          <div
+            class="btn btn-secondary social-button"
+            @click="oidcAuth()"
+          >
+            <div class="text">
+              {{ $t('loginWithSocial', {social: 'Keistech SSO'}) }}
+            </div>
+          </div>
+        </div>
+      </div>
       <div class="form-group">
         <div>
           <div
@@ -562,6 +577,7 @@ export default {
         code: null,
       },
       usernameIssues: [],
+      oidcAvailable: false,
     };
 
     data.icons = Object.freeze({
@@ -631,8 +647,37 @@ export default {
         this.username = this.$route.query.email;
       }
     }
+
+    // Self-host OIDC (authentik): show the SSO button only when the server
+    // has it configured, and finish the flow when the IdP bounced us back.
+    axios.get('/api/v4/user/auth/oidc/enabled')
+      .then(result => { this.oidcAvailable = Boolean(result.data.data.enabled); })
+      .catch(() => { this.oidcAvailable = false; });
+
+    const { sso } = this.$route.query;
+    if (sso === '1' || sso === 'linked') {
+      this.finishOidc();
+    } else if (sso === 'denied') {
+      this.text(this.$t('ssoNotLinked'));
+    } else if (sso === 'error') {
+      this.text(this.$t('ssoError'));
+    }
   },
   methods: {
+    oidcAuth () {
+      window.location.href = '/api/v4/user/auth/oidc';
+    },
+    async finishOidc () {
+      try {
+        await this.$store.dispatch('auth:oidcLogin');
+        const redirectTo = this.sanitizeRedirect(this.$route.query.redirectTo);
+        window.location.href = redirectTo;
+      } catch (err) {
+        // Clear ?sso= so a reload cannot retry a spent hand-off in a loop.
+        this.$router.replace({ name: 'login' });
+        this.text(this.$t('ssoError'));
+      }
+    },
     async login () {
       await this.$store.dispatch('auth:login', {
         username: this.username,

@@ -1,5 +1,38 @@
 <template>
   <div class="d-content">
+    <!-- Self-host OIDC (authentik). Connecting is the ONLY way SSO login can
+         work, so this row is the bootstrap path for every family account. -->
+    <tr v-if="oidcAvailable">
+      <td class="settings-label">
+        <div class="network-icon-with-label">
+          <span class="ml-75">Keistech SSO</span>
+        </div>
+      </td>
+      <td class="settings-value">
+        <div
+          v-if="oidcConnected"
+          class="connected-pill"
+        >
+          {{ $t('connected') }}
+        </div>
+      </td>
+      <td class="settings-button">
+        <a
+          v-if="!oidcConnected"
+          class="edit-link"
+          @click.prevent="connectOidc()"
+        >
+          {{ $t('connect') }}
+        </a>
+        <a
+          v-if="oidcConnected"
+          class="remove-link"
+          @click.prevent="removeOidc()"
+        >
+          {{ $t('remove') }}
+        </a>
+      </td>
+    </tr>
     <tr
       v-for="network in SOCIAL_AUTH_NETWORKS"
       :key="network.key"
@@ -42,20 +75,57 @@
   </div>
 </template>
 
+<style lang="scss" scoped>
+@import '@/assets/scss/colors.scss';
+
+.icon-16 ::v-deep svg {
+  height: 16px;
+  width: 16px;
+}
+
+.network-icon-with-label {
+  display: flex;
+  align-items: center;
+  flex-direction: row;
+
+  span:not(.svg-icon) {
+    flex: 1;
+  }
+}
+
+.connected-pill {
+  display: inline-block;
+
+  padding: 4px 12px;
+  border-radius: 100px;
+  background-color: $green-50;
+
+  font-size: 12px;
+  line-height: 1.33;
+  color: $white;
+}
+
+.social-icon.apple {
+  margin-bottom: -2px !important;
+}
+</style>
 <script>
 import axios from 'axios';
 import hello from 'hellojs';
 import { SUPPORTED_SOCIAL_NETWORKS } from '@/../../common/script/constants';
 import { buildAppleAuthUrl } from '@/libs/auth';
 import { mapState } from '@/libs/store';
+import notifications from '@/mixins/notifications';
 import googleIcon from '@/assets/svg/google.svg?raw';
 import appleIcon from '@/assets/svg/apple_black.svg?raw';
 
 export default {
   name: 'LoginMethods',
+  mixins: [notifications],
   data () {
     return {
       SOCIAL_AUTH_NETWORKS: [],
+      oidcAvailable: false,
       // Made available by the server as a script
       localAuth: {
         password: '',
@@ -72,9 +142,20 @@ export default {
       user: 'user.data',
       content: 'content',
     }),
+    oidcConnected () {
+      return Boolean(this.user && this.user.auth && this.user.auth.oidc && this.user.auth.oidc.id);
+    },
   },
   mounted () {
     this.SOCIAL_AUTH_NETWORKS = SUPPORTED_SOCIAL_NETWORKS;
+
+    axios.get('/api/v4/user/auth/oidc/enabled')
+      .then(result => { this.oidcAvailable = Boolean(result.data.data.enabled); })
+      .catch(() => { this.oidcAvailable = false; });
+
+    if (this.$route.query.sso === 'linked') {
+      this.text(this.$t('connected'));
+    }
 
     this.$store.dispatch('common:setTitle', {
       section: this.$t('settings'),
@@ -97,6 +178,16 @@ export default {
     }
   },
   methods: {
+    connectOidc () {
+      // Top-level navigation: the server needs to 303 us to the IdP, which an
+      // XHR cannot follow cross-origin.
+      window.location.href = '/api/v4/user/auth/oidc/link';
+    },
+    async removeOidc () {
+      await axios.delete('/api/v4/user/auth/oidc/link');
+      this.user.auth.oidc = {};
+      this.text(this.$t('remove'));
+    },
     async deleteSocialAuth (network) {
       await axios.delete(`/api/v4/user/auth/social/${network.key}`);
       this.user.auth[network.key] = {};
@@ -148,38 +239,3 @@ export default {
   },
 };
 </script>
-
-<style lang="scss" scoped>
-@import '@/assets/scss/colors.scss';
-
-.icon-16 ::v-deep svg {
-  height: 16px;
-  width: 16px;
-}
-
-.network-icon-with-label {
-  display: flex;
-  align-items: center;
-  flex-direction: row;
-
-  span:not(.svg-icon) {
-    flex: 1;
-  }
-}
-
-.connected-pill {
-  display: inline-block;
-
-  padding: 4px 12px;
-  border-radius: 100px;
-  background-color: $green-50;
-
-  font-size: 12px;
-  line-height: 1.33;
-  color: $white;
-}
-
-.social-icon.apple {
-  margin-bottom: -2px !important;
-}
-</style>
