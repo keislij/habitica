@@ -27,4 +27,12 @@ describe('self-host production contracts', () => {
     expect(dockerfile).not.to.include('--chown=caddy:caddy');
     expect(dockerfile).not.to.include('USER caddy');
   });
+
+  it('removes Caddy file capabilities before dropping all runtime capabilities', () => {
+    const stripCapabilities = dockerfile.indexOf('RUN setcap -r /usr/bin/caddy');
+    const dropPrivileges = dockerfile.indexOf('USER 65532:65532');
+
+    expect(stripCapabilities).to.be.greaterThan(-1);
+    expect(dropPrivileges).to.be.greaterThan(stripCapabilities);
+  });
 });
