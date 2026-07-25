@@ -110,6 +110,12 @@ describe('NewsPost Model', () => {
       if (intervalId) clearInterval(intervalId);
     });
 
+    it('does not keep one-shot processes alive between refreshes', () => {
+      intervalId = refreshNewsPost(100);
+
+      expect(intervalId.hasRef()).to.equal(false);
+    });
+
     it('refreshes the last post at a specific interval', async () => {
       await sleep(0.1); // wait 100ms to make sure all previous posts are in the past
       const previousPost = {

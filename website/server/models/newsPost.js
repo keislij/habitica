@@ -87,7 +87,9 @@ function getAndUpdateLastNewsPost () {
 }
 
 export function refreshNewsPost (interval) {
-  return setInterval(() => getAndUpdateLastNewsPost(), interval);
+  const refreshInterval = setInterval(() => getAndUpdateLastNewsPost(), interval);
+  refreshInterval.unref();
+  return refreshInterval;
 }
 
 // Fetches the last news post and refresh it every 5 minutes
