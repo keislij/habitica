@@ -31,19 +31,30 @@ deployed through the guarded `kt-gitops` reconcile:
 - kt-gitops PRs #124–#129 and keistech PRs #97–#102 merged; knowledge_base
   service record merged (PR #105)
 
-## Open acceptance gates (Stage 3)
+## Stage 3 acceptance — closed 2026-07-25
 
-- Owner and household accounts (registration currently fail-closed, HTTP 403)
-- Mail delivery proof through Proton Bridge STARTTLS
-- Team cron: fail-closed behind `HABITICA_TEAM_CRON_ENABLED=false` pending the
-  private-image fix for `MongoClientClosedError` in the Blocker watcher
-- Disposable restore drill (`restore_proven: 0` in the backup catalog)
-- Native mobile client proof; browser QA passed with two open findings
-  (signup visible while registration disabled; /register overflows at
-  mobile width)
-- Home Assistant native integration config entry (dedicated account pending)
+- Accounts: `ktadmin` (owner), `kai`, `xavier`, `ha-integration` created via
+  the documented registration flip (re-locked; HTTP 403 re-verified);
+  "Keisling Family" party formed; credentials in AKV `HABITICA-ACCOUNT-*`
+- Mail: Proton Bridge SMTP proven end-to-end (awaited reset-password 200 plus
+  a test message received in an external mailbox)
+- Team cron: fixed in `5.48.7-selfhost.5` (`ONE_SHOT_PROCESS` gates Blocker
+  change streams, the NewsPost refresh interval, and mongoose autoIndex);
+  enabled and green in production (kt-gitops #130)
+- Restore: disposable authenticated rs0 drill run `20260725T032829Z` passed
+  every plan check (oplogReplay, counts, ready, login, task, daily reset,
+  team cron, web ingress; production untouched) — see knowledge_base
+  `services/habitica/restore-evidence/20260725T032829Z.md`
+- Home Assistant: three native config entries loaded (ha-integration, kai,
+  xavier) against https://chores.tekeis.net
+- Skill/KB: `habitica` skill generated (grade A) and live; manifest active +
+  drift-monitored; kb-rag ingested; marketplace plugin published
 
-## Next milestone
+## Remaining open items
 
-Close the Stage 3 acceptance gates above, then flip the knowledge-base
-deployment_state from `deployed-acceptance-incomplete` to accepted.
+- Native mobile client proof
+- Browser QA cosmetic findings: signup visible while registration disabled;
+  /register overflows at mobile width
+- NAS encryption at rest and NFS transport encryption unverified
+- Fork commit `b03ab3e0` exists locally only — push to `keislij/habitica`
+  when requested (provenance ledger references it)
