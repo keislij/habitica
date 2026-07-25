@@ -10,8 +10,11 @@ while versioning our operating rules, research, agents, and runbooks.
 - `habitica-wiki/` is a local clone of the official GitHub wiki.
 - Node 20/npm 10 dependencies, MongoDB 7, API, client, build, lint, sanity tests,
   and client unit tests have been exercised locally.
-- Production deployment has **not** started. The deployment target, public
-  hostname, backup contract, and self-host product-policy changes remain gates.
+- Production is **live** at `https://chores.tekeis.net` on dedicated CT1290,
+  deployed from the `private/selfhost-production-v5.48.7` branch through
+  `kt-gitops` as immutable image digests. Stage 3 acceptance (accounts, mail,
+  team cron, restore drill, mobile, Home Assistant) is still open — see
+  [status](docs/STATUS.md).
 - Home Assistant's native Habitica integration supports custom instances. That
   is the first integration path; custom bridge code is a later gap-driven option.
 
