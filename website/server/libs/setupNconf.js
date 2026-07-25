@@ -18,4 +18,7 @@ export default function setupNconf (file, nconfInstance = nconfDefault) {
 
   // we need this in common and can't use nconf on the client.
   process.env.CONTENT_SWITCHOVER_TIME_OFFSET = nconfInstance.get('CONTENT_SWITCHOVER_TIME_OFFSET') || 0;
+  // Private self-host unlock (see common/script/libs/selfhostUnlock.js).
+  process.env.SELF_HOST_UNLOCK_ALL = String(nconfInstance.get('SELF_HOST_UNLOCK_ALL') === true
+    || nconfInstance.get('SELF_HOST_UNLOCK_ALL') === 'true');
 }

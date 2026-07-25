@@ -11,6 +11,7 @@ import {
 import { model as User, schema as UserSchema } from '../../models/user';
 import { model as NewsPost } from '../../models/newsPost';
 import { stringContainsProfanity, nameContainsNewline } from './validation';
+import selfhostUnlockAll from '../../../common/script/libs/selfhostUnlock';
 
 export async function get (req, res, { isV3 = false }) {
   const { user } = res.locals;
@@ -169,15 +170,18 @@ export async function update (req, res, { isV3 = false }) {
       }
     }
 
-    const matchingGroups = await Groups.find({
-      _id: { $in: groupsToMirror },
-      'purchased.plan.customerId': { $exists: true },
-      $or: [
+    // Private self-host: without lifting the plan filter here the preference
+    // silently stores [] and the mirroring toggle appears to work but doesn't.
+    const matchingGroupsQuery = { _id: { $in: groupsToMirror } };
+    if (!selfhostUnlockAll()) {
+      matchingGroupsQuery['purchased.plan.customerId'] = { $exists: true };
+      matchingGroupsQuery.$or = [
         { 'purchased.plan.dateTerminated': { $exists: false } },
         { 'purchased.plan.dateTerminated': null },
         { 'purchased.plan.dateTerminated': { $gt: new Date() } },
-      ],
-    }, {
+      ];
+    }
+    const matchingGroups = await Groups.find(matchingGroupsQuery, {
       _id: 1,
     }).exec();
 

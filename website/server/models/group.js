@@ -39,6 +39,7 @@ import { getGroupChat, translateMessage } from '../libs/chat/group-chat'; // esl
 import { model as UserNotification } from './userNotification';
 import { sendChatPushNotifications } from '../libs/chat'; // eslint-disable-line import/no-cycle
 import { model as UserHistory } from './userHistory'; // eslint-disable-line import/no-cycle
+import selfhostUnlockAll from '../../common/script/libs/selfhostUnlock';
 
 const questScrolls = shared.content.quests;
 const { questSeriesAchievements } = shared.content;
@@ -157,7 +158,10 @@ schema.plugin(baseModel, {
   private: ['purchased.plan'],
   toJSONTransform (plainObj, originalDoc) {
     if (plainObj.purchased) {
-      plainObj.purchased.active = originalDoc.hasActiveGroupPlan();
+      // Private self-host: tells the client to render the group-plan feature set
+      // (shared task board, member management). Serialization only — no server
+      // authorization or payment path reads purchased.active.
+      plainObj.purchased.active = selfhostUnlockAll() ? true : originalDoc.hasActiveGroupPlan();
       const plan = originalDoc.purchased && originalDoc.purchased.plan;
       if (plan && plan.dateCreated) {
         plainObj.purchased.wasUpgraded = true;

@@ -8,6 +8,7 @@ import {
 import { AbstractGoldItemOperation } from './abstractBuyOperation';
 import planGemLimits from '../../libs/planGemLimits';
 import updateUserBalance from '../updateUserBalance';
+import selfhostUnlockAll from '../../libs/selfhostUnlock';
 
 export class BuyGemOperation extends AbstractGoldItemOperation { // eslint-disable-line import/prefer-default-export, max-len
   multiplePurchaseAllowed () { // eslint-disable-line class-methods-use-this
@@ -41,7 +42,10 @@ export class BuyGemOperation extends AbstractGoldItemOperation { // eslint-disab
   }
 
   canUserPurchase (user, item) {
-    if (!user.purchased || !user.purchased.plan || !user.purchased.plan.customerId) {
+    // Private self-host: gold -> gems is the only renewable gem faucet when no
+    // payment provider exists. The monthly conversion cap below still applies.
+    if (!selfhostUnlockAll()
+      && (!user.purchased || !user.purchased.plan || !user.purchased.plan.customerId)) {
       throw new NotAuthorized(this.i18n('mustSubscribeToPurchaseGems'));
     }
 

@@ -27,6 +27,7 @@ import shared from '../../../common';
 import { taskScoredWebhook } from '../webhook';
 
 import logger from '../logger';
+import selfhostUnlockAll from '../../../common/script/libs/selfhostUnlock';
 
 /**
  * Creates tasks for a user, challenge or group.
@@ -162,18 +163,16 @@ async function getTasks (req, res, options = {}) {
   } else {
     const groupsToMirror = user.preferences.tasks.mirrorGroupTasks;
     if (groupsToMirror && groupsToMirror.length > 0) {
-      upgradedGroups = await Group.find(
-        {
-          _id: { $in: groupsToMirror },
-          'purchased.plan.customerId': { $exists: true },
-          $or: [
-            { 'purchased.plan.dateTerminated': { $exists: false } },
-            { 'purchased.plan.dateTerminated': null },
-            { 'purchased.plan.dateTerminated': { $gt: new Date() } },
-          ],
-        },
-        { _id: 1 },
-      ).exec();
+      const mirrorQuery = { _id: { $in: groupsToMirror } };
+      if (!selfhostUnlockAll()) {
+        mirrorQuery['purchased.plan.customerId'] = { $exists: true };
+        mirrorQuery.$or = [
+          { 'purchased.plan.dateTerminated': { $exists: false } },
+          { 'purchased.plan.dateTerminated': null },
+          { 'purchased.plan.dateTerminated': { $gt: new Date() } },
+        ];
+      }
+      upgradedGroups = await Group.find(mirrorQuery, { _id: 1 }).exec();
     }
     if (upgradedGroups.length > 0) {
       for (const upgradedGroup of upgradedGroups) {
@@ -317,6 +316,10 @@ function canNotEditTasks (group, user, assignedUserId) {
 }
 
 function groupSubscriptionNotFound (group) {
+  // Private self-host: group (team) tasks are a core household feature, not a
+  // paid add-on. Membership is still enforced by Group.getGroup and edit
+  // rights by canNotEditTasks above; only the billing gate is lifted.
+  if (selfhostUnlockAll()) return !group;
   return !group || !group.purchased || !group.purchased.plan || !group.purchased.plan.customerId
    || (group.purchased.plan.dateTerminated && group.purchased.plan.dateTerminated < new Date());
 }

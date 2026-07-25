@@ -64,7 +64,18 @@ export const STATIC_ROUTES = {
       name: 'front', path: 'front', component: HomePage, meta: { requiresLogin: false },
     },
     {
-      name: 'groupPlans', path: 'group-plans', component: GroupPlansPage, meta: { requiresLogin: false },
+      name: 'groupPlans',
+      path: 'group-plans',
+      component: GroupPlansPage,
+      meta: { requiresLogin: false },
+      beforeEnter (to, from, next) {
+        // Private self-host: nothing to sell, group plans are unlocked.
+        if (import.meta.env.SELF_HOST_UNLOCK_ALL === 'true') {
+          next('/login');
+          return;
+        }
+        next();
+      },
     },
     {
       name: 'home', path: 'home', component: HomePage, meta: { requiresLogin: false },

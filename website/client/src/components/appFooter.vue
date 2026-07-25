@@ -1,6 +1,6 @@
 <template>
   <div>
-    <buy-gems-modal v-if="user" />
+    <buy-gems-modal v-if="user && $paymentsEnabled" />
     <privacy-modal />
     <footer>
       <div class="columns d-flex w-100 justify-content-between">

@@ -67,7 +67,7 @@
         @click.prevent="logout()"
       >{{ $t('logout') }}</a>
       <li
-        v-if="!user.purchased.plan.customerId"
+        v-if="!$unlockAll && !user.purchased.plan.customerId"
         class="topbar-dropdown-item dropdown-item dropdown-separated
           d-flex flex-column justify-content-center align-items-center dropdown-inactive subs-info"
       >

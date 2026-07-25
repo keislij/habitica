@@ -16,6 +16,7 @@
   "NODE_ENV": "production",
   "PAYMENTS_ENABLED": "false",
   "PLAY_CONSOLE_ORDERS_BASE_URL": "",
+  "SELF_HOST_UNLOCK_ALL": "false",
   "STRIPE_PUB_KEY": "",
   "TIME_TRAVEL_ENABLED": "false",
   "TRUSTED_DOMAINS": "https://chores.tekeis.net"

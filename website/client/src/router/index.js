@@ -116,7 +116,20 @@ const router = new VueRouter({
     },
     { name: 'party', path: '/party', component: GroupPage },
     { name: 'lookingForParty', path: '/looking-for-party', component: LookingForParty },
-    { name: 'groupPlan', path: '/group-plans', component: GroupPlansAppPage },
+    {
+      name: 'groupPlan',
+      path: '/group-plans',
+      component: GroupPlansAppPage,
+      beforeEnter (to, from, next) {
+        // Private self-host: group plans are already unlocked, so the
+        // upsell page has nothing to sell. Send the family to their party.
+        if (import.meta.env.SELF_HOST_UNLOCK_ALL === 'true') {
+          next('/party');
+          return;
+        }
+        next();
+      },
+    },
     {
       name: 'groupPlanDetail',
       path: '/group-plans/:groupId',

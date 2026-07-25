@@ -20,8 +20,8 @@
     <template v-if="isUserLoaded">
       <privacy-banner />
       <damage-paused-banner />
-      <gems-promo-banner />
-      <gift-promo-banner />
+      <gems-promo-banner v-if="$paymentsEnabled" />
+      <gift-promo-banner v-if="$paymentsEnabled" />
       <birthday-banner />
       <notifications-display />
       <app-menu />

@@ -44,6 +44,12 @@ Vue.use(TooltipPlugin);
 Vue.use(NavbarPlugin);
 Vue.use(CollapsePlugin);
 
+// Private self-host flags. $unlockAll: subscriptions/group plans are granted
+// locally, so every upsell surface is meaningless and stays hidden.
+// $paymentsEnabled: no payment provider is configured on this instance.
+Vue.prototype.$unlockAll = import.meta.env.SELF_HOST_UNLOCK_ALL === 'true';
+Vue.prototype.$paymentsEnabled = import.meta.env.PAYMENTS_ENABLED === 'true';
+
 setUpLogging();
 const store = getStore();
 

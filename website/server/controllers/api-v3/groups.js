@@ -35,6 +35,7 @@ import stripePayments from '../../libs/payments/stripe';
 import amzLib from '../../libs/payments/amazon';
 import { apiError } from '../../libs/apiError';
 import { model as UserNotification } from '../../models/userNotification';
+import selfhostUnlockAll from '../../../common/script/libs/selfhostUnlock';
 import {
   leaveGroup,
   removeMessagesFromMember,
@@ -1268,7 +1269,10 @@ api.getGroupPlans = {
       .select('leaderOnly leader purchased name managers')
       .exec();
 
-    const groupPlans = groups.filter(group => group.hasActiveGroupPlan());
+    // Private self-host: every group the member belongs to is plan-enabled.
+    const groupPlans = selfhostUnlockAll()
+      ? groups
+      : groups.filter(group => group.hasActiveGroupPlan());
 
     res.respond(200, groupPlans);
   },

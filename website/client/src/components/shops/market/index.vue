@@ -261,7 +261,7 @@ export default {
         showCount: false,
       }];
 
-      if (this.user.purchased.plan.customerId) {
+      if (this.$unlockAll || this.user.purchased.plan.customerId) {
         const gemItem = getItemInfo(this.user, 'gem');
 
         specialItems.push({

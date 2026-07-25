@@ -3,6 +3,7 @@ import { model as Group } from '../models/group';
 import { model as User } from '../models/user';
 import * as Tasks from '../models/task';
 import common from '../../common';
+import selfhostUnlockAll from '../../common/script/libs/selfhostUnlock';
 
 const { daysSince, shouldDo } = common;
 
@@ -103,9 +104,15 @@ async function updateTeamTasks (team) {
 }
 
 export default async function processTeamsCron () {
-  const activeTeams = await Group.find({
-    'purchased.plan.customerId': { $exists: true },
-  }, { cron: 1, leader: 1, purchased: 1 }).exec();
+  // Private self-host: without this, group Dailies never reset — yesterday's
+  // chores stay completed forever and the chore chart is unusable.
+  const teamQuery = selfhostUnlockAll()
+    ? {}
+    : { 'purchased.plan.customerId': { $exists: true } };
+  const activeTeams = await Group.find(
+    teamQuery,
+    { cron: 1, leader: 1, purchased: 1 },
+  ).exec();
 
   const cronPromises = activeTeams.map(updateTeamTasks);
   return Promise.all(cronPromises);

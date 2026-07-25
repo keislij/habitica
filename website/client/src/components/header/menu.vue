@@ -402,7 +402,7 @@
           </div>
           <div
             class="item-with-icon gem"
-            @click.prevent="showBuyGemsModal()"
+            @click.prevent="$paymentsEnabled && showBuyGemsModal()"
           >
             <a
               v-b-tooltip.hover.bottom="$t('gems')"

@@ -38,6 +38,7 @@ const envVars = [
   'PLAY_CONSOLE_ORDERS_BASE_URL',
   'EXTERNAL_ANALYTICS_ENABLED',
   'PAYMENTS_ENABLED',
+  'SELF_HOST_UNLOCK_ALL',
 ];
 
 const envObject = {};

@@ -3,6 +3,7 @@ import {
   defaults, map, flatten, flow, compact, uniq, partialRight, remove,
 } from 'lodash';
 import { v4 as uuid } from 'uuid';
+import selfhostUnlockAll from '../../../common/script/libs/selfhostUnlock';
 import common from '../../../common';
 
 import { // eslint-disable-line import/no-cycle
@@ -29,6 +30,10 @@ import { TransactionModel as Transaction } from '../transaction';
 const { daysSince } = common;
 
 schema.methods.isSubscribed = function isSubscribed () {
+  // Private self-host: subscriber perks are granted locally and forever.
+  // No plan.customerId is written, so nothing downstream treats this user as
+  // a paying customer (see common/script/libs/selfhostUnlock.js).
+  if (selfhostUnlockAll()) return true;
   const now = new Date();
   const { plan } = this.purchased;
   return plan && plan.customerId

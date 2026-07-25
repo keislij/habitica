@@ -315,7 +315,7 @@ export default {
       this.group = await this.$store.dispatch('guilds:getGroup', {
         groupId: this.searchId,
       });
-      if (!this.group?.purchased?.active) {
+      if (!this.$unlockAll && !this.group?.purchased?.active) {
         if (this.group.type === 'guild') this.$router.push(`/groups/guild/${this.group._id}`);
         if (this.group.type === 'party') this.$router.push('/party');
         return;
