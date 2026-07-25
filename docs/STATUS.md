@@ -50,6 +50,21 @@ deployed through the guarded `kt-gitops` reconcile:
 - Skill/KB: `habitica` skill generated (grade A) and live; manifest active +
   drift-monitored; kb-rag ingested; marketplace plugin published
 
+## Single sign-on (2026-07-25)
+
+Native OIDC against authentik shipped as `5.48.7-selfhost.6` and is
+verified end-to-end in a browser (SSO button -> authentik -> signed in):
+
+- Login matches only the immutable subject; email/username claims are
+  never used to select an account. Subjects bind through an
+  authenticated link action, so SSO can sign in to existing accounts but
+  never creates or re-binds one — registration stays fail-closed.
+- `jesse`, `kai`, and `xavier` authentik identities are pre-linked to the
+  `ktadmin`, `kai`, and `xavier` Habitica accounts.
+- Local passwords, API tokens, and the Home Assistant integration are
+  unaffected; Settings > Login Methods has a Keistech SSO row for
+  connect/remove.
+
 ## Remaining open items
 
 - Native mobile client proof
