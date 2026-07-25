@@ -44,6 +44,14 @@ schema.plugin(baseModel, {
   timestamps: true,
 });
 
+function isExpectedChangeStreamShutdownError (error) {
+  const { readyState } = mongoose.connection;
+  const connectionIsClosing = readyState === mongoose.STATES.disconnecting
+    || readyState === mongoose.STATES.disconnected;
+
+  return connectionIsClosing && error instanceof mongoose.mongo.MongoClientClosedError;
+}
+
 schema.statics.watchBlockers = function watchBlockers (query, options) {
   const emitter = new EventEmitter();
   const matchQuery = {
@@ -78,6 +86,9 @@ schema.statics.watchBlockers = function watchBlockers (query, options) {
         }
       })
       .on('error', error => {
+        if (isExpectedChangeStreamShutdownError(error)) {
+          return;
+        }
         emitter.emit('error', error);
       });
     if (options.initial) {
