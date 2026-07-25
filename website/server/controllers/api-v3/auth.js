@@ -380,11 +380,10 @@ api.resetPassword = {
 
       user.auth.local.passwordResetCode = passwordResetCode;
 
-      sendTxnEmail(user, 'reset-password', [
+      await user.save();
+      await sendTxnEmail(user, 'reset-password', [
         { name: 'PASSWORD_RESET_LINK', content: link },
       ]);
-
-      await user.save();
     }
 
     res.respond(200, {}, res.t('passwordReset'));

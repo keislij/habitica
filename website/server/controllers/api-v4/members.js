@@ -1,7 +1,9 @@
-import worker from '../../libs/worker';
 import { authWithHeaders } from '../../middlewares/auth';
 import { ensurePermission } from '../../middlewares/ensureAccessRight';
+import { NotFound } from '../../libs/errors';
+import deleteAccount from '../../libs/user/deleteAccount';
 import { TransactionModel as Transaction } from '../../models/transaction';
+import { model as User } from '../../models/user';
 
 const api = {};
 
@@ -48,14 +50,14 @@ api.deleteMember = {
     req.checkQuery('deleteAmplitude').optional().isIn(['true', 'false']);
     const validationErrors = req.validationErrors();
     if (validationErrors) throw validationErrors;
-    await worker.sendJob('deleteUser', {
-      identifier: req.params.memberId,
-      data: {
-        userId: req.params.memberId,
-        deleteAccount: req.query.deleteAccount === 'true',
-        deleteAmplitude: req.query.deleteAmplitude === 'true',
-      },
-    });
+    if (req.query.deleteAccount === 'true') {
+      const member = await User.findById(req.params.memberId).exec();
+      if (!member) throw new NotFound(res.t('userNotFound'));
+      await deleteAccount(member);
+    }
+
+    // External analytics are disabled for this private self-host. The
+    // deleteAmplitude query remains accepted for compatibility and is a no-op.
     res.respond(200, {});
   },
 };

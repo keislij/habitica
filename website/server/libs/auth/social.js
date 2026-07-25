@@ -16,7 +16,12 @@ import { trackRegistrationEvent } from '../localAnalytics';
 
 function _passportProfile (network, accessToken) {
   return new Promise((resolve, reject) => {
-    passport._strategies[network].userProfile(accessToken, (err, profile) => {
+    const strategy = passport._strategies[network];
+    if (!strategy) {
+      reject(new BadRequest('This social authentication provider is not configured.'));
+      return;
+    }
+    strategy.userProfile(accessToken, (err, profile) => {
       if (err) {
         reject(err);
       } else {
@@ -161,12 +166,12 @@ export async function loginSocial (req, res) { // eslint-disable-line import/pre
     EmailUnsubscription
       .deleteOne({ email })
       .exec()
-      .then(() => {
+      .then(async () => {
         if (!existingUser) {
           if (savedUser._ABtests && savedUser._ABtests.welcomeEmailSplit) {
-            sendTxnEmail(savedUser, savedUser._ABtests.welcomeEmailSplit);
+            await sendTxnEmail(savedUser, savedUser._ABtests.welcomeEmailSplit);
           } else {
-            sendTxnEmail(savedUser, 'welcome');
+            await sendTxnEmail(savedUser, 'welcome');
           }
         }
       })

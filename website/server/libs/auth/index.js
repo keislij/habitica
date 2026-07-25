@@ -19,6 +19,7 @@ import {
 import { loginRes } from './utils';
 import { verifyUsername } from '../user/validation';
 import { trackRegistrationEvent } from '../localAnalytics';
+import { assertRegistrationEnabled } from './registration';
 
 const USERNAME_LENGTH_MIN = 1;
 const USERNAME_LENGTH_MAX = 20;
@@ -81,6 +82,7 @@ function hasBackupAuth (user, networkToRemove) {
 
 async function registerLocal (req, res, { isV3 = false }) {
   const existingUser = res.locals.user; // If adding local auth to social user
+  assertRegistrationEnabled(existingUser);
 
   req.checkBody({
     username: {
@@ -208,12 +210,12 @@ async function registerLocal (req, res, { isV3 = false }) {
   // Clean previous email preferences and send welcome email
   EmailUnsubscription
     .deleteOne({ email: savedUser.auth.local.email })
-    .then(() => {
+    .then(async () => {
       if (existingUser) return;
       if (newUser.registeredThrough === 'habitica-web') {
-        sendTxnEmail(savedUser, 'welcome-v2b');
+        await sendTxnEmail(savedUser, 'welcome-v2b');
       } else {
-        sendTxnEmail(savedUser, 'welcome');
+        await sendTxnEmail(savedUser, 'welcome');
       }
     })
     .catch(err => logger.error(err));
