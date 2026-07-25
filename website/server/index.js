@@ -14,6 +14,7 @@ const setupNconf = require('./libs/setupNconf').default;
 
 // Initialize configuration BEFORE anything
 setupNconf();
+require('./libs/selfhostConfig').default();
 
 // Initialize @google-cloud/trace-agent
 require('./libs/gcpTraceAgent');

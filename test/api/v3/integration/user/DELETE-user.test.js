@@ -9,7 +9,6 @@ import {
   sha1Encrypt as sha1EncryptPassword,
 } from '../../../../../website/server/libs/password';
 import * as email from '../../../../../website/server/libs/email';
-import sendJob from '../../../../../website/server/libs/worker';
 
 const DELETE_CONFIRMATION = 'DELETE';
 
@@ -42,13 +41,26 @@ describe('DELETE /user', () => {
       });
     });
 
-    it('sends deletion job to worker', async () => {
-      const workerStub = sandbox.stub(sendJob, 'sendJob');
+    it('deletes the user before returning success', async () => {
+      await expect(checkExistence('users', user._id)).to.eventually.eql(true);
       await user.del('/user', {
         password,
       });
-      expect(workerStub).to.be.calledOnce;
-      workerStub.restore();
+      await expect(checkExistence('users', user._id)).to.eventually.eql(false);
+    });
+
+    it('deletes the user tasks before returning success', async () => {
+      const task = await user.post('/tasks/user', {
+        text: 'task to delete with account',
+        type: 'habit',
+      });
+      await expect(checkExistence('tasks', task._id)).to.eventually.eql(true);
+
+      await user.del('/user', {
+        password,
+      });
+
+      await expect(checkExistence('tasks', task._id)).to.eventually.eql(false);
     });
 
     it('returns an error if excessive feedback is supplied', async () => {
@@ -110,8 +122,6 @@ describe('DELETE /user', () => {
       const textPassword = 'mySecretPassword';
       const salt = sha1MakeSalt();
       const sha1HashedPassword = sha1EncryptPassword(textPassword, salt);
-      const workerStub = sandbox.stub(sendJob, 'sendJob');
-
       await user.updateOne({
         'auth.local.hashed_password': sha1HashedPassword,
         'auth.local.passwordHashMethod': 'sha1',
@@ -128,8 +138,7 @@ describe('DELETE /user', () => {
       await user.del('/user', {
         password: textPassword,
       });
-      expect(workerStub).to.be.calledOnce;
-      workerStub.restore();
+      await expect(checkExistence('users', user._id)).to.eventually.eql(false);
     });
 
     context('last member of a party', () => {
@@ -163,12 +172,11 @@ describe('DELETE /user', () => {
     });
 
     it('deletes a Google user', async () => {
-      const workerStub = sandbox.stub(sendJob, 'sendJob');
+      await expect(checkExistence('users', user._id)).to.eventually.eql(true);
       await user.del('/user', {
         password: DELETE_CONFIRMATION,
       });
-      expect(workerStub).to.be.calledOnce;
-      workerStub.restore();
+      await expect(checkExistence('users', user._id)).to.eventually.eql(false);
     });
   });
 
@@ -184,12 +192,11 @@ describe('DELETE /user', () => {
     });
 
     it('deletes an Apple user', async () => {
-      const workerStub = sandbox.stub(sendJob, 'sendJob');
+      await expect(checkExistence('users', user._id)).to.eventually.eql(true);
       await user.del('/user', {
         password: DELETE_CONFIRMATION,
       });
-      expect(workerStub).to.be.calledOnce;
-      workerStub.restore();
+      await expect(checkExistence('users', user._id)).to.eventually.eql(false);
     });
   });
 });

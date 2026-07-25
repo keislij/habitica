@@ -1,6 +1,8 @@
 import getStore from '@/store';
 
 export function setup () { // eslint-disable-line import/prefer-default-export
+  if (import.meta.env.PAYMENTS_ENABLED !== 'true') return;
+
   const store = getStore();
 
   // Set Amazon Payments as ready in the store,

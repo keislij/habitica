@@ -24,6 +24,7 @@ import {
   forceHabitica,
 } from './redirects';
 import blocker from './blocker';
+import paymentGate from './paymentGate';
 import v1 from './v1';
 import v2 from './v2';
 import appRoutes from './appRoutes';
@@ -87,6 +88,7 @@ export default function attachMiddlewares (app, server) {
   app.use(maintenanceMode);
 
   app.use(blocker);
+  app.use(paymentGate);
 
   app.use(cors);
   if (!DISABLE_SSL_ENFORCEMENT) {

@@ -11,6 +11,7 @@ const REQUIRED_FIELDS = ['eventCategory', 'eventAction'];
 
 let analyticsLoading = false;
 let analyticsReady = false;
+const ANALYTICS_ENABLED = import.meta.env.EXTERNAL_ANALYTICS_ENABLED === 'true';
 
 function _getConsentedUser () {
   const store = getStore();
@@ -63,6 +64,7 @@ function _gatherUserStats (properties) {
 }
 
 export function safeSetup (userId) {
+  if (!ANALYTICS_ENABLED) return;
   if (analyticsLoading || analyticsReady) return;
   analyticsLoading = true;
   amplitude.getInstance().init(AMPLITUDE_KEY, userId);
@@ -71,6 +73,7 @@ export function safeSetup (userId) {
 }
 
 export function track (properties, options = {}) {
+  if (!ANALYTICS_ENABLED) return;
   const user = _getConsentedUser();
   if (!user) return;
   safeSetup(user._id);
@@ -90,6 +93,7 @@ export function track (properties, options = {}) {
 }
 
 export function updateUser (properties = {}) {
+  if (!ANALYTICS_ENABLED) return;
   const user = _getConsentedUser();
   if (!user) return;
   safeSetup(user._id);
