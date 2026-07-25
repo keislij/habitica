@@ -23,9 +23,13 @@ COPY config.selfhost-build.json ./config.json
 
 ARG PUBLIC_BASE_URL=https://chores.tekeis.net
 ARG TRUSTED_DOMAINS=https://chores.tekeis.net
+# Private self-host unlock: compiled into the client bundle so upsell UI is
+# hidden and unlocked features render. See common/script/libs/selfhostUnlock.js.
+ARG SELF_HOST_UNLOCK_ALL=false
 ENV NODE_ENV=production \
   BASE_URL=${PUBLIC_BASE_URL} \
   TRUSTED_DOMAINS=${TRUSTED_DOMAINS} \
+  SELF_HOST_UNLOCK_ALL=${SELF_HOST_UNLOCK_ALL} \
   EXTERNAL_ANALYTICS_ENABLED=false \
   PAYMENTS_ENABLED=false \
   LOGGLY_CLIENT_TOKEN="" \
