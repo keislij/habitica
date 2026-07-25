@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import nconf from 'nconf';
 import baseModel from '../libs/baseModel';
 import logger from '../libs/logger';
 
@@ -90,6 +91,11 @@ export function refreshNewsPost (interval) {
   return setInterval(() => getAndUpdateLastNewsPost(), interval);
 }
 
-// Fetches the last news post and refresh it every 5 minutes
-getAndUpdateLastNewsPost();
-refreshNewsPost(NEWS_CACHE_TIME);
+// Fetches the last news post and refresh it every 5 minutes.
+// One-shot processes (the self-host team cron) skip both: the immediate fetch
+// races the intentional final disconnect and the interval would keep the
+// process alive forever.
+if (String(nconf.get('ONE_SHOT_PROCESS')) !== 'true') {
+  getAndUpdateLastNewsPost();
+  refreshNewsPost(NEWS_CACHE_TIME);
+}

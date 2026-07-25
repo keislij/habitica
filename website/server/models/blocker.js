@@ -2,6 +2,7 @@
 
 import mongoose from 'mongoose';
 import EventEmitter from 'events';
+import nconf from 'nconf';
 import baseModel from '../libs/baseModel';
 
 export const blockTypes = [
@@ -46,6 +47,12 @@ schema.plugin(baseModel, {
 
 schema.statics.watchBlockers = function watchBlockers (query, options) {
   const emitter = new EventEmitter();
+  // One-shot processes (the self-host team cron) must not open MongoDB change
+  // streams: an open stream makes the intentional mongoose.disconnect() emit
+  // MongoClientClosedError after the work has already succeeded. They opt out
+  // and receive an inert emitter (empty in-memory blocklists are irrelevant to
+  // a process that serves no requests).
+  if (String(nconf.get('ONE_SHOT_PROCESS')) === 'true') return emitter;
   const matchQuery = {
     $match: {},
   };
