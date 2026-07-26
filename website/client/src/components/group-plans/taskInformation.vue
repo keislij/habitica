@@ -281,9 +281,23 @@ export default {
     groupStartTime () {
       if (!this.group || !this.group.cron) return null;
       const { dayStart, timezoneOffset } = this.group.cron;
-      const timezoneDiff = this.user.preferences.timezoneOffset - timezoneOffset;
+      // A group whose plan was unlocked rather than purchased has a cron object
+      // holding only lastProcessed -- dayStart and timezoneOffset are never
+      // seeded, because upstream seeds them in the purchase flow. Guarding on
+      // `!this.group.cron` alone was therefore not enough.
+      //
+      // This matters more than it looks: moment().hour(undefined) is a GETTER,
+      // so it returns a Number and the chained .minute(0) threw. The throw
+      // happened inside a computed property consumed by the template, so Vue
+      // aborted the whole component render and the Habits/Dailies/To Do's/
+      // Rewards columns never mounted -- the group chore board came up blank.
+      const startHour = Number.isFinite(dayStart) ? dayStart : 0;
+      const groupOffset = Number.isFinite(timezoneOffset)
+        ? timezoneOffset
+        : this.user.preferences.timezoneOffset;
+      const timezoneDiff = this.user.preferences.timezoneOffset - groupOffset;
       return moment()
-        .hour(dayStart)
+        .hour(startHour)
         .minute(0)
         .subtract(timezoneDiff, 'minutes')
         .format('h:mm A');
