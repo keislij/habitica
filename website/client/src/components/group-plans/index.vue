@@ -18,8 +18,10 @@
       >
         {{ $t('groupInformation') }}
       </router-link>
+      <!-- No billing exists on a self-host; this tab sat one click from the
+           chore board and led to a dead payment surface. -->
       <router-link
-        v-if="isLeader"
+        v-if="isLeader && !$unlockAll"
         class="nav-link"
         :to="{name: 'groupPlanBilling', params: {groupId}}"
         exact="exact"

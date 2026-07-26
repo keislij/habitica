@@ -3,7 +3,14 @@
     <buy-gems-modal v-if="user && $paymentsEnabled" />
     <privacy-modal />
     <footer>
-      <div class="columns d-flex w-100 justify-content-between">
+      <!-- Private self-host: every one of these columns either leaves this
+           instance, advertises the official apps this family cannot use, or
+           files bugs against upstream Habitica for a fork upstream does not
+           ship. Attribution is preserved in the legal row below. -->
+      <div
+        v-if="!$unlockAll"
+        class="columns d-flex w-100 justify-content-between"
+      >
         <!-- Product -->
         <div class="product">
           <h3>{{ $t('footerProduct') }}</h3>
@@ -272,8 +279,27 @@
         <!-- DESKTOP LEGAL -->
         <div class="desktop d-flex justify-content-between align-items-center">
           <div class="copyright">
+            <!-- "All rights reserved" is wrong for a GPLv3 project and is not
+                 sufficient CC BY-SA attribution for Habitica's art/content.
+                 Shown unconditionally: attribution must survive the gate. -->
             <div>
-              © {{ currentYear }} Habitica. All rights reserved.
+              Powered by
+              <a
+                target="_blank"
+                rel="noopener noreferrer"
+                href="https://habitica.com"
+              >Habitica</a>
+              — code
+              <a
+                target="_blank"
+                rel="noopener noreferrer"
+                href="https://github.com/HabitRPG/habitica/blob/develop/LICENSE"
+              >GPLv3</a>, art and content
+              <a
+                target="_blank"
+                rel="noopener noreferrer"
+                href="https://creativecommons.org/licenses/by-sa/4.0/"
+              >CC BY-SA 4.0</a>. © {{ currentYear }} HabitRPG, Inc.
             </div>
           </div>
           <div class="melior">
@@ -303,7 +329,23 @@
         <div class="mobile">
           <div class="copyright mx-auto mb-2">
             <div>
-              © {{ currentYear }} Habitica. All rights reserved.
+              Powered by
+              <a
+                target="_blank"
+                rel="noopener noreferrer"
+                href="https://habitica.com"
+              >Habitica</a>
+              — code
+              <a
+                target="_blank"
+                rel="noopener noreferrer"
+                href="https://github.com/HabitRPG/habitica/blob/develop/LICENSE"
+              >GPLv3</a>, art and content
+              <a
+                target="_blank"
+                rel="noopener noreferrer"
+                href="https://creativecommons.org/licenses/by-sa/4.0/"
+              >CC BY-SA 4.0</a>. © {{ currentYear }} HabitRPG, Inc.
             </div>
           </div>
           <div class="privacy-policy mx-auto mb-2">

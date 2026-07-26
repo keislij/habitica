@@ -35,7 +35,13 @@
           </div>
         </div>
       </div>
-      <div class="form-group">
+      <!-- Private self-host: no Google/Apple OAuth credentials are configured on
+           this instance, so both buttons are dead UI on the first screen a family
+           member sees. Keistech SSO (above) and local login are the real paths. -->
+      <div
+        v-if="!$unlockAll"
+        class="form-group"
+      >
         <div>
           <div
             class="btn btn-secondary social-button"
@@ -53,7 +59,10 @@
           </div>
         </div>
       </div>
-      <div class="form-group">
+      <div
+        v-if="!$unlockAll"
+        class="form-group"
+      >
         <div>
           <div
             class="btn btn-secondary social-button"

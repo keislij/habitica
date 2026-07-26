@@ -11,6 +11,19 @@
     <link rel="shortcut icon" sizes="192x192" href="/static/icons/favicon_192x192.png">
     <link rel="mask-icon" href="/static/icons/favicon.ico">
     <meta property="og:image" content="/static/emails/images/meta-image.png" />
+    <!-- Self-host PWA: makes the app installable to an iPad home screen.
+         Assets live under /static/ because the production Caddy only
+         file-serves /assets/* and /static/*; any other path falls through
+         to the SPA and would return HTML (see ops/Caddyfile). -->
+    <link rel="manifest" href="/static/manifest.webmanifest">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Chores">
+    <meta name="theme-color" content="#4F2A93">
+    <!-- Explicit link required: without it iOS probes /apple-touch-icon.png at
+         the root, which returns SPA HTML with a 200 and yields a blank icon. -->
+    <link rel="apple-touch-icon" sizes="180x180" href="/static/icons/apple-touch-icon-180.png">
     <script type="module" src="/src/main.js"></script>
   </head>
   <body>
