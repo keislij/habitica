@@ -187,5 +187,7 @@
   "whatToCallYou": "What should we call you?",
   "acceptPrivacyTOS": "You confirm that you are at least 18 years old, and that you have read and agree to our <%= termsLink %>Terms of Service<%= linkClose %> and <%= privacyLink %>Privacy Policy<%= linkClose %>",
   "emailAddress": "Email address",
-  "emailRequiredForSupport": "We require an email address for user support. Please enter an email address to continue creating your account."
+  "emailRequiredForSupport": "We require an email address for user support. Please enter an email address to continue creating your account.",
+  "ssoNotLinked": "This SSO identity is not connected to an account yet. Log in with your password, then connect Keistech SSO under Settings > Login Methods.",
+  "ssoError": "SSO sign-in could not be completed. Please try again."
 }

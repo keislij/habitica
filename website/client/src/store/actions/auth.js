@@ -46,6 +46,15 @@ export async function login (store, params) {
   saveLocalDataAuth(store, user.id, user.apiToken);
 }
 
+// Self-host OIDC: after the server-side callback set the cookie session,
+// collect the API credentials the SPA actually authenticates with.
+export async function oidcLogin (store) {
+  const result = await axios.get('/api/v4/user/auth/oidc/credentials');
+  const user = result.data.data;
+
+  saveLocalDataAuth(store, user.id, user.apiToken);
+}
+
 export async function verifyUsername (store, params) {
   const url = '/api/v4/user/auth/verify-username';
   const result = await axios.post(url, {
