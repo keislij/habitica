@@ -295,11 +295,26 @@ export default {
       });
     }
 
-    this.$router.onReady(() => {
-      if (this.isStaticPage || !this.isUserLoggedIn) {
+    // The error callback is not optional. vue-router flushes readyErrorCbs --
+    // not readyCbs -- when the initial navigation aborts, so without it any
+    // failed route dependency leaves hideLoadingScreen() uncalled and the app
+    // stuck on the splash screen forever, with nothing logged.
+    //
+    // That is not hypothetical: a CSP-blocked @import inside a route's CSS
+    // chunk made __vitePreload reject, which aborted the very first navigation
+    // and bricked the whole site. A stale deploy 404ing a chunk does the same,
+    // which an installed PWA holding a cached index.html makes likely.
+    this.$router.onReady(
+      () => {
+        if (this.isStaticPage || !this.isUserLoggedIn) {
+          this.hideLoadingScreen();
+        }
+      },
+      err => {
+        console.error('Router failed to become ready', err); // eslint-disable-line no-console
         this.hideLoadingScreen();
-      }
-    });
+      },
+    );
   },
   methods: {
     hideLoadingScreen () {

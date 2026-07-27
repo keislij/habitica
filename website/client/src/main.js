@@ -44,6 +44,24 @@ Vue.use(TooltipPlugin);
 Vue.use(NavbarPlugin);
 Vue.use(CollapsePlugin);
 
+// A chunk that fails to preload otherwise aborts the router navigation and
+// leaves the app on its splash screen with no error surfaced. The common cause
+// is a redeploy invalidating hashed asset names while a client -- especially an
+// installed PWA holding a cached index.html -- still references the old ones.
+// Reloading once picks up the new index.html and its current asset hashes.
+// Guarded so a genuinely broken build cannot reload-loop.
+window.addEventListener('vite:preloadError', event => {
+  event.preventDefault();
+  const KEY = 'habitica:preloadReloadAt';
+  const last = Number(window.sessionStorage?.getItem(KEY) || 0);
+  if (Date.now() - last > 15000) {
+    window.sessionStorage?.setItem(KEY, String(Date.now()));
+    window.location.reload();
+  } else {
+    console.error('Asset preload failed twice; not reloading again', event); // eslint-disable-line no-console
+  }
+});
+
 setUpLogging();
 const store = getStore();
 
