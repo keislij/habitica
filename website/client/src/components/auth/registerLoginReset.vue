@@ -271,6 +271,15 @@
           >
             {{ $t('sendLink') }}
           </button>
+          <!-- Without this there is no way out of the forgot-password view: it
+               swaps the form in place without changing the URL, so browser Back
+               leaves the site entirely. In an installed PWA there is no back
+               button, no reload and no URL bar, so a mistap here meant
+               force-quitting the app. -->
+          <a
+            class="white d-inline-block mt-3 back-to-login"
+            @click="forgotPassword = false"
+          >{{ $t('login') }}</a>
         </div>
       </div>
     </form>

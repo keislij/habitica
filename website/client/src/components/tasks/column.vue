@@ -254,10 +254,12 @@
   }
 
   .column-title {
+    // In landscape the filter row shares this flex line and was winning all the
+    // space, ellipsising every heading -- "To Do's" rendered as a single "T".
+    // flex-shrink:0 keeps the heading whole and lets the filters wrap instead.
     margin-bottom: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
     white-space: nowrap;
+    flex-shrink: 0;
   }
 
   .column-badge {
@@ -265,7 +267,12 @@
   }
 
   .filters {
+    // Now that the heading no longer shrinks, let the filters wrap rather than
+    // push the row into horizontal overflow at narrow iPad widths.
     margin-left: auto;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    min-width: 0;
   }
 
   .filter {

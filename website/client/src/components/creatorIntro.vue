@@ -6,11 +6,15 @@
     :hide-header="true"
     :hide-footer="true"
     :modal-class="{'page-2': !editing}"
-    :no-close-on-esc="!editing"
-    :no-close-on-backdrop="!editing"
+    :no-close-on-esc="false"
+    :no-close-on-backdrop="false"
   >
+    <!-- Upstream locks this first-run avatar wizard shut: no close button, no
+         Escape, no backdrop dismiss, and its Finish button stays disabled until
+         you pick an RPG interest category. That is a reasonable onboarding for
+         habitica.com and a dead end for a child opening a chore app. Always
+         dismissable here. -->
     <close-x
-      v-if="editing"
       @close="close()"
     />
     <h2
