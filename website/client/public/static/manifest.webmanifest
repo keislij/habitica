@@ -2,7 +2,7 @@
   "name": "Keisling Chores",
   "short_name": "Chores",
   "description": "Family chores and rewards",
-  "start_url": "/",
+  "start_url": "/login",
   "scope": "/",
   "display": "standalone",
   "orientation": "any",

@@ -825,6 +825,30 @@
     cursor: pointer;
   }
 
+  // Touch targets. These are THE most-tapped controls in the app -- the habit
+  // +/- and the daily/to-do tick -- and they shipped at 28x28. Apple's HIG and
+  // WCAG 2.5.5 both put the minimum at 44px, and a child on an iPad misses a
+  // 28px target constantly, which reads as "the app doesn't work".
+  //
+  // The hit area is widened without changing the visual size: the icon inside
+  // keeps its own dimensions, this only grows the tappable box.
+  .task-control, .reward-control {
+    min-width: 44px;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  // The overflow menu was 16x16 -- less than half the minimum.
+  .task-menu, .task-dropdown-toggle, .toggle-up-hover {
+    min-width: 44px;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
   .task-not-scoreable {
     .task-control, .reward-control {
       cursor: default !important;

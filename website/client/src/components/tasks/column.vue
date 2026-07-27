@@ -302,18 +302,25 @@
       margin-bottom: 12px;
     }
 
+    // $gray-300 (#A5A1AC) on the #EDECEE column background measures 2.15:1 --
+    // WCAG AA needs 4.5:1. This is the empty-state text explaining what each
+    // column is for, i.e. the first thing a new kid reads, and it was
+    // near-invisible. $gray-50 (#4E4A57) measures 7.31:1 on the same
+    // background. ($gray-100 #686274 would be 4.97:1 -- passing, but only just.)
     h3, .small-text {
-      color: $gray-300;
+      color: $gray-50;
       text-align: center;
     }
 
     h3 {
-      font-weight: normal;
+      font-weight: bold;
       margin-bottom: 4px;
     }
 
     .small-text {
       font-style: normal;
+      font-size: 14px;
+      line-height: 1.45;
       padding-left: 24px;
       padding-right: 24px;
     }

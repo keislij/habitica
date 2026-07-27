@@ -34,6 +34,18 @@ if [ -n "$(git status --porcelain)" ]; then
   exit 1
 fi
 
+# --- refuse to ship an off-origin CSS import ----------------------------------
+# A Google Fonts @import in a route's CSS chunk once bricked the entire client:
+# our CSP blocks it, the injected <link> errors, Vite's preload rejects, and
+# vue-router aborts the first navigation, leaving a permanent splash screen.
+# It answered HTTP 200 throughout, so no health check caught it.
+if grep -rn "@import url(['\"]\?https\?://" website/client/src --include=*.vue --include=*.scss --include=*.css 2>/dev/null; then
+  echo "ERROR: off-origin CSS @import found above. Our CSP (ops/Caddyfile," >&2
+  echo "       style-src 'self' 'unsafe-inline') blocks these and the client" >&2
+  echo "       will hang on a blank splash screen. Self-host the asset instead." >&2
+  exit 1
+fi
+
 COMMIT="$(git rev-parse HEAD)"
 if ! git merge-base --is-ancestor "$COMMIT" "$(git rev-parse HEAD)" 2>/dev/null; then
   echo "ERROR: cannot resolve HEAD." >&2; exit 1
