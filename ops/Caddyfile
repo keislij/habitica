@@ -32,6 +32,12 @@
 	@sw path /sw.js
 	header @sw Cache-Control "no-cache, no-store, must-revalidate"
 
+	# iOS only offers to INSTALL a configuration profile when it is served as
+	# application/x-apple-aspen-config. Any other type and Safari just downloads
+	# or displays it, and the Web Clip never gets added.
+	@mobileconfig path /static/chores.mobileconfig
+	header @mobileconfig Content-Type "application/x-apple-aspen-config"
+
 	root * /srv
 	# /sw.js is listed explicitly because a worker only controls the scope it is
 	# served from -- at /static/sw.js it could only govern /static/*, which is
