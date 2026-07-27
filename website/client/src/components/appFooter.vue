@@ -291,7 +291,7 @@
         <div class="desktop d-flex justify-content-between align-items-center">
           <div class="copyright">
             <div>
-              © {{ currentYear }} Habitica. All rights reserved.
+              Keisling family chores · powered by Habitica
             </div>
           </div>
           <div class="melior">
@@ -323,7 +323,7 @@
         <div class="mobile">
           <div class="copyright mx-auto mb-2">
             <div>
-              © {{ currentYear }} Habitica. All rights reserved.
+              Keisling family chores · powered by Habitica
             </div>
           </div>
           <!--
