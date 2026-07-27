@@ -260,14 +260,6 @@ const router = new VueRouter({
     // Only used to handle some redirects
     // See router.beforeEach
     { path: '/static/tavern-and-guilds', redirect: '/static/faq/tavern-and-guilds' },
-
-    // Group plans are granted on this instance, not sold. These marketing
-    // routes exist only to sell them: /static/group-plans' "Get Started" opens
-    // a modal quoting "$9.00/mo ... plus $3.00 per member, pro-rated", which is
-    // the path a parent naturally takes to build the family chore board. Send
-    // both to the party, which is what they actually want.
-    { path: '/static/group-plans', redirect: '/party' },
-    { path: '/static/plans', redirect: '/party' },
     {
       path: '/apidoc',
       component: NotFoundPage,
@@ -290,17 +282,18 @@ router.beforeEach(async (to, from, next) => {
   if (to.name === 'redirect') return handleRedirect(to, from, next);
 
   if (!isUserLoggedIn && routeRequiresLogin) {
-    // Always the login page -- upstream sends '/' to the public marketing site
-    // ("Join over 4 million Habiticans", App Store and Play Store links, "Sign
-    // Up For Free"). On a private four-person family instance that page is
-    // wrong for every visitor, and it is what an installed PWA opened whenever
-    // the session had lapsed: a child tapping the Chores icon landed on an ad
-    // for a different product, inside a window with no back button, no reload
-    // and no address bar. Pass the requested page through so login can return
-    // the user to where they were headed.
+    // Redirect to the login page unless the user is trying to reach the
+    // root of the website, in which case show the home page.
+    // Pass the requested page as a query parameter to redirect later.
+    // (The PWA entry point is handled by manifest start_url: /login, so an
+    // installed app no longer opens here regardless.)
+
+    const redirectTo = to.path === '/' ? 'home' : 'login';
     return next({
-      name: 'login',
-      query: { redirectTo: to.path },
+      name: redirectTo,
+      query: redirectTo === 'login' ? {
+        redirectTo: to.path,
+      } : to.query,
     });
   }
 

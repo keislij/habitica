@@ -3,11 +3,9 @@
     <div id="top-background">
       <div class="seamless_stars_varied_opacity_repeat"></div>
     </div>
-    <!-- Cookie-consent banner removed. It asked the family to consent to
-         analytics and support tooling that this instance does not run: the
-         self-host patch stack disables analytics outright, and there is no
-         third-party processor here. Asking for consent to something that
-         cannot happen is noise on the first screen the kids see. -->
+    <privacy-banner
+      class="privacy-banner"
+    />
     <form
       v-if="!forgotPassword && !resetPasswordSetNewOne"
       id="login-form"
@@ -535,6 +533,7 @@
 
 <script>
 import axios from 'axios';
+import PrivacyBanner from '@/components/header/banners/privacy';
 import debounce from 'lodash/debounce';
 import isEmail from 'validator/es/lib/isEmail';
 import notifications from '@/mixins/notifications';
@@ -547,6 +546,7 @@ import appleIcon from '@/assets/svg/apple_black.svg?raw';
 
 export default {
   components: {
+    PrivacyBanner,
   },
   mixins: [accountCreation, notifications, sanitizeRedirect],
   data () {
