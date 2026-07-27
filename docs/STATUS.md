@@ -1,6 +1,6 @@
 # Onboarding status
 
-Last updated: 2026-07-25.
+Last updated: 2026-07-27.
 
 ## Complete
 
@@ -15,9 +15,19 @@ Last updated: 2026-07-25.
 
 ## Deployed (Stage 2 complete)
 
-Production is live from the `private/selfhost-production-v5.48.7` branch
-(source commit `cb3409b`), built into immutable Forgejo image digests and
-deployed through the guarded `kt-gitops` reconcile:
+Production is live as **`5.48.7-selfhost.21`** from the
+`private/selfhost-patches-v5.48.7` branch (source commit `bbad6850`), built into
+immutable Forgejo image digests and deployed through the guarded `kt-gitops`
+reconcile.
+
+**The base changed on 2026-07-27.** This fork now sits on
+`awinterstein/habitica releases/v5.48.7` -- the same upstream version plus a
+maintained 23-commit self-host stack -- rather than on upstream directly. Our
+own work is a short ordered stack of single-purpose commits replayed on top;
+see `PATCH-STACK.md` for what each one is and, more usefully, the condition
+under which it should be deleted rather than carried forward. Four of our
+commits died that way in the rebase because awinterstein implements them better.
+`ops/rebase-onto-upstream.sh` replays the stack onto a newer release branch.
 
 - Dedicated LXC CT1290 (`habitica`, 10.10.3.98, pmve2, 6 cores / 12 GiB)
 - `https://chores.tekeis.net` via Traefik file-provider route, Let's Encrypt
@@ -30,10 +40,14 @@ deployed through the guarded `kt-gitops` reconcile:
   integrity catalog
 - kt-gitops PRs #124–#129 and keistech PRs #97–#102 merged; knowledge_base
   service record merged (PR #105)
+- Source durability: fork pushed to `keislij/habitica`, releases tagged
+  `selfhost-v5.48.7.1` … `.7`; every commit referenced by the kt-gitops
+  provenance ledger resolves from a clean clone
 
 ## Stage 3 acceptance — closed 2026-07-25
 
-- Accounts: `ktadmin` (owner), `kai`, `xavier`, `ha-integration` created via
+- Accounts: `ktadmin` (Dad), `mandy` (Mom), `kai`, `xavier`, plus a dedicated
+  `ha-integration` service account, created via
   the documented registration flip (re-locked; HTTP 403 re-verified);
   "Keisling Family" party formed; credentials in AKV `HABITICA-ACCOUNT-*`
 - Mail: Proton Bridge SMTP proven end-to-end (awaited reset-password 200 plus
@@ -71,5 +85,3 @@ verified end-to-end in a browser (SSO button -> authentik -> signed in):
 - Browser QA cosmetic findings: signup visible while registration disabled;
   /register overflows at mobile width
 - NAS encryption at rest and NFS transport encryption unverified
-- Fork commit `b03ab3e0` exists locally only — push to `keislij/habitica`
-  when requested (provenance ledger references it)

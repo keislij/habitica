@@ -7,3 +7,8 @@
 .env.*
 !.env.example
 
+
+# Transient QA/agent artifacts. .worktrees reaches >1GB (isolated git worktrees
+# created by test agents) and .playwright-cli holds run output; neither is source.
+.worktrees/
+.playwright-cli/
