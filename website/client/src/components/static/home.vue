@@ -370,8 +370,6 @@
 @import '@/assets/scss/privacy.scss';
 @import '@/assets/scss/forms.scss';
 
-@import url('https://fonts.googleapis.com/css?family=Varela+Round');
-
   .w-33 {
     width: 33%;
   }

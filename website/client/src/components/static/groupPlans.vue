@@ -115,7 +115,6 @@
 </style>
 
 <style lang='scss' scoped>
-  @import url('https://fonts.googleapis.com/css?family=Varela+Round');
   @import '@/assets/scss/colors.scss';
 
   // General typography tweaks
