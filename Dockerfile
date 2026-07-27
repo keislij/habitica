@@ -1,113 +1,108 @@
-# Container stage for building server and web component of Habitica
-FROM node:20 AS build
+# syntax=docker/dockerfile:1.7
 
-ARG CI=true
-ARG NODE_ENV=production
+ARG NODE_BUILD_IMAGE=node:20.20.2-bookworm@sha256:8f693eaa7e0a8e71560c9a82b55fd54c2ae920a2ba5d2cde28bac7d1c01c9ba5
+ARG NODE_RUNTIME_IMAGE=node:20.20.2-bookworm-slim@sha256:2cf067cfed83d5ea958367df9f966191a942351a2df77d6f0193e162b5febfc0
+ARG CADDY_IMAGE=caddy:2.10.2-alpine@sha256:4c6e91c6ed0e2fa03efd5b44747b625fec79bc9cd06ac5235a779726618e530d
 
-RUN git config --global url."https://".insteadOf git://
+FROM ${NODE_BUILD_IMAGE} AS build
 
-WORKDIR /usr/src/habitica
+ENV CI=true
+WORKDIR /build
 
-# Install main packages
-COPY ["package.json", "package-lock.json", "./"]
-RUN npm pkg set scripts.postinstall="echo \"Skipping postinstall\"" && npm install
+COPY package.json package-lock.json ./
+RUN npm pkg set scripts.postinstall="echo skipping repository postinstall during image build" \
+  && npm ci --no-audit --no-fund
 
-# Install client packages
-COPY ["website/client/package.json", "website/client/package-lock.json", "./website/client/"]
-RUN cd website/client/ && npm pkg set scripts.postinstall="echo \"Skipping postinstall\"" && npm install
+COPY website/client/package.json website/client/package-lock.json ./website/client/
+RUN cd website/client \
+  && npm pkg set scripts.postinstall="echo skipping client postinstall during image build" \
+  && npm ci --no-audit --no-fund
 
-# Make the source code available in the container
-COPY . /usr/src/habitica
+COPY . .
+COPY config.selfhost-build.json ./config.json
 
-# Create configuration file (some values are needed for the client build already)
-RUN echo '{\n\
-    "BASE_URL": "http://localhost:3000",\n\
-    "CRON_SAFE_MODE": "false",\n\
-    "CRON_SEMI_SAFE_MODE": "false",\n\
-    "DISABLE_REQUEST_LOGGING": "true",\n\
-    "EMAIL_SERVER_AUTH_PASSWORD": "",\n\
-    "EMAIL_SERVER_AUTH_USER": "",\n\
-    "EMAIL_SERVER_URL": null,\n\
-    "ENABLE_CONSOLE_LOGS_IN_PROD": "true",\n\
-    "ENABLE_CONSOLE_LOGS_IN_TEST": "false",\n\
-    "FLAG_REPORT_EMAIL": "",\n\
-    "IGNORE_REDIRECT": "true",\n\
-    "INVITE_ONLY": "false",\n\
-    "MAINTENANCE_MODE": "false",\n\
-    "MONGODB_POOL_SIZE": "10",\n\
-    "NODE_ENV": "production",\n\
-    "PATH": "bin:node_modules/.bin:/usr/local/bin:/usr/bin:/bin",\n\
-    "PORT": 3000,\n\
-    "PUSH_CONFIGS_APN_ENABLED": "false",\n\
-    "SESSION_SECRET": "YOUR SECRET HERE",\n\
-    "SESSION_SECRET_IV": "12345678912345678912345678912345",\n\
-    "SESSION_SECRET_KEY": "1234567891234567891234567891234567891234567891234567891234567891",\n\
-    "TRUSTED_DOMAINS": "",\n\
-    "WEB_CONCURRENCY": 1,\n\
-    "ENABLE_STACKDRIVER_TRACING": "false",\n\
-    "BLOCKED_IPS": "",\n\
-    "LOG_AMPLITUDE_EVENTS": "false",\n\
-    "RATE_LIMITER_ENABLED": "false",\n\
-    "CONTENT_SWITCHOVER_TIME_OFFSET": 8\n\
-}' > /usr/src/habitica/config.json
+ARG PUBLIC_BASE_URL=https://chores.tekeis.net
+ARG TRUSTED_DOMAINS=https://chores.tekeis.net
+# Private self-host unlock: compiled into the client bundle so upsell UI is
+ENV NODE_ENV=production \
+  BASE_URL=${PUBLIC_BASE_URL} \
+  TRUSTED_DOMAINS=${TRUSTED_DOMAINS} \
+  EXTERNAL_ANALYTICS_ENABLED=false \
+  PAYMENTS_ENABLED=false \
+  LOGGLY_CLIENT_TOKEN="" \
+  AMPLITUDE_KEY="" \
+  AMAZON_PAYMENTS_CLIENT_ID="" \
+  AMAZON_PAYMENTS_SELLER_ID="" \
+  APPLE_AUTH_CLIENT_ID="" \
+  GOOGLE_CLIENT_ID="" \
+  STRIPE_PUB_KEY=""
 
-# Build the server and web components
-RUN ./node_modules/.bin/gulp build:prod
-RUN npm run client:build
+RUN npm pkg set scripts.postinstall="echo skipping repository postinstall during image build" \
+  && ./node_modules/.bin/gulp build:prod \
+  && npm run client:build \
+  && npm prune --omit=dev --no-audit --no-fund \
+  && npm cache clean --force \
+  && rm -f config.json
 
+FROM ${NODE_RUNTIME_IMAGE} AS server
 
+ARG BUILD_DATE
+ARG VERSION=5.48.7-selfhost.4
+ARG VCS_REF
+LABEL org.opencontainers.image.created="${BUILD_DATE}" \
+  org.opencontainers.image.description="Private self-hosted Habitica application server" \
+  org.opencontainers.image.revision="${VCS_REF}" \
+  org.opencontainers.image.source="https://github.com/keislij/habitica" \
+  org.opencontainers.image.title="habitica-server" \
+  org.opencontainers.image.version="${VERSION}"
 
-# Container for providing the build server component of Habitica
-FROM node:20 AS server
+ENV NODE_ENV=production \
+  PORT=3000 \
+  SELF_HOST_REGISTRATION_ENABLED=false \
+  WEB_CONCURRENCY=0
+WORKDIR /var/lib/habitica
 
-ENV NODE_ENV=production
+COPY --from=build --chown=node:node /build/node_modules ./node_modules
+COPY --from=build --chown=node:node /build/package.json ./package.json
+COPY --chown=node:node config.selfhost-runtime.json ./config.json
+COPY --from=build --chown=node:node /build/content_cache ./content_cache
+COPY --from=build --chown=node:node /build/i18n_cache ./i18n_cache
+COPY --from=build --chown=node:node /build/website/common ./website/common
+COPY --from=build --chown=node:node /build/website/client/dist ./website/client/dist
+COPY --from=build --chown=node:node /build/website/transpiled-babel ./website/transpiled-babel
 
-COPY --from=build /usr/src/habitica/node_modules /var/lib/habitica/node_modules
+USER node
+EXPOSE 3000
+STOPSIGNAL SIGTERM
+HEALTHCHECK --interval=30s --timeout=5s --start-period=45s --retries=3 \
+  CMD ["node", "-e", "const http=require('http');const base=new URL(process.env.BASE_URL||require('./config.json').BASE_URL);const req=http.get({hostname:'127.0.0.1',port:3000,path:'/api/v3/status',headers:{Host:base.host,'X-Forwarded-Host':base.host,'X-Forwarded-Proto':'https'}},res=>process.exit(res.statusCode===200?0:1));req.setTimeout(4000,()=>{req.destroy();process.exit(1);});req.on('error',()=>process.exit(1));"]
+CMD ["node", "website/transpiled-babel/index.js"]
 
-COPY --from=build /usr/src/habitica/i18n_cache/ /var/lib/habitica/i18n_cache/
-COPY --from=build /usr/src/habitica/content_cache/ /var/lib/habitica/content_cache/
+FROM ${CADDY_IMAGE} AS web
 
-COPY --from=build /usr/src/habitica/website/ /var/lib/habitica/website/
+ARG BUILD_DATE
+ARG VERSION=5.48.7-selfhost.4
+ARG VCS_REF
+LABEL org.opencontainers.image.created="${BUILD_DATE}" \
+  org.opencontainers.image.description="Private self-hosted Habitica web frontend" \
+  org.opencontainers.image.revision="${VCS_REF}" \
+  org.opencontainers.image.source="https://github.com/keislij/habitica" \
+  org.opencontainers.image.title="habitica-web" \
+  org.opencontainers.image.version="${VERSION}"
 
-COPY --from=build /usr/src/habitica/package.json /var/lib/habitica/package.json
-COPY --from=build /usr/src/habitica/config.json /var/lib/habitica/config.json
+ENV BACKEND_SERVER=habitica-server:3000 \
+  EDGE_PROXY_IP=10.10.3.150 \
+  HOME=/tmp \
+  XDG_CONFIG_HOME=/tmp/caddy-config \
+  XDG_DATA_HOME=/tmp/caddy-data
 
+RUN setcap -r /usr/bin/caddy
 
-# Copy the scripts and cron job for resetting group dailies on a daily basis
-RUN mkdir -p /var/lib/habitica/scripts/
-COPY --from=build /usr/src/habitica/scripts/team-cron.js /var/lib/habitica/scripts/team-cron.js
-COPY --from=build /usr/src/habitica/scripts/team-cron/run-team-cron.js /var/lib/habitica/
-RUN apt-get update && apt-get -y install cron
-RUN mkdir -p /etc/cron.d
-COPY --from=build /usr/src/habitica/scripts/team-cron/habiticateamcron /etc/cron.d/habiticateamcron
-RUN chmod 0644 /etc/cron.d/habiticateamcron
-RUN crontab /etc/cron.d/habiticateamcron
+COPY ops/Caddyfile /etc/caddy/Caddyfile
+COPY --from=build --chown=65532:65532 /build/website/client/dist /srv
 
-CMD sh -c 'printenv | grep -v "no_proxy" >> /etc/environment && /etc/init.d/cron start && node /var/lib/habitica/website/transpiled-babel/index.js'
-
-
-# Container for providing the build web component of Habitica
-FROM caddy AS client
-
-COPY --from=build /usr/src/habitica/website/client/dist /var/www
-
-ENV BACKEND_SERVER=server:3000
-
-RUN echo -e ":80 {\n\
-	@backend not {\n\
-		path /static/audio/\n\
-		path /static/css/\n\
-		path /static/emails/\n\
-		path /static/icons/\n\
-		path /static/img/\n\
-		path /static/js/\n\
-		path /static/merch/\n\
-		path /static/npc/\n\
-		path /static/presskit/\n\
-		path /index.html\n\
-	}\n\
-\n\
-	root * /var/www\n\
-	reverse_proxy @backend {\$BACKEND_SERVER:server:3000}\n\
-	file_server\n\
-}" > /etc/caddy/Caddyfile
+USER 65532:65532
+EXPOSE 8080
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+  CMD ["wget", "--quiet", "--spider", "http://127.0.0.1:8080/healthz"]
+CMD ["caddy", "run", "--config", "/etc/caddy/Caddyfile", "--adapter", "caddyfile"]

@@ -1,0 +1,22 @@
+{
+  "AMAZON_PAYMENTS_CLIENT_ID": "",
+  "AMAZON_PAYMENTS_MODE": "sandbox",
+  "AMAZON_PAYMENTS_SELLER_ID": "",
+  "AMPLITUDE_KEY": "",
+  "APPLE_AUTH_CLIENT_ID": "",
+  "BASE_URL": "https://chores.tekeis.net",
+  "CONTENT_SWITCHOVER_TIME_OFFSET": 8,
+  "DEBUG_ENABLED": "false",
+  "EMAILS_COMMUNITY_MANAGER_EMAIL": "homelab@tekeis.net",
+  "EMAILS_PRESS_ENQUIRY_EMAIL": "homelab@tekeis.net",
+  "EMAILS_TECH_ASSISTANCE_EMAIL": "homelab@tekeis.net",
+  "EXTERNAL_ANALYTICS_ENABLED": "false",
+  "GOOGLE_CLIENT_ID": "",
+  "LOGGLY_CLIENT_TOKEN": "",
+  "NODE_ENV": "production",
+  "PAYMENTS_ENABLED": "false",
+  "PLAY_CONSOLE_ORDERS_BASE_URL": "",
+  "STRIPE_PUB_KEY": "",
+  "TIME_TRAVEL_ENABLED": "false",
+  "TRUSTED_DOMAINS": "https://chores.tekeis.net"
+}
