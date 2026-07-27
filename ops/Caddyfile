@@ -26,9 +26,19 @@
 	@immutable path /assets/*
 	header @immutable Cache-Control "public, max-age=31536000, immutable"
 
+	# The service worker must never be cached: a stale sw.js keeps serving its
+	# own old logic and is the classic way an installed PWA becomes unfixable
+	# remotely. Always revalidate.
+	@sw path /sw.js
+	header @sw Cache-Control "no-cache, no-store, must-revalidate"
+
 	root * /srv
+	# /sw.js is listed explicitly because a worker only controls the scope it is
+	# served from -- at /static/sw.js it could only govern /static/*, which is
+	# useless. Without this it also falls through to the SPA and answers with
+	# text/html, which the browser refuses to register.
 	@static {
-		path /assets/* /static/*
+		path /assets/* /static/* /sw.js
 		file {path}
 	}
 	handle @static {

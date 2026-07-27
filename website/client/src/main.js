@@ -62,6 +62,19 @@ window.addEventListener('vite:preloadError', event => {
   }
 });
 
+// Service worker: offline tolerance plus Chrome/Android installability, which
+// requires a fetch handler. iOS Add-to-Home-Screen never needed this. The
+// worker is network-first throughout, so it cannot serve a stale build to an
+// online device -- see website/client/public/sw.js for why that matters here.
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').catch(err => {
+      // Registration failing must never be fatal: the app works fine without it.
+      console.warn('Service worker registration failed', err); // eslint-disable-line no-console
+    });
+  });
+}
+
 setUpLogging();
 const store = getStore();
 
