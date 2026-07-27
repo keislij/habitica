@@ -28,10 +28,14 @@
       </div>
     </div>
     <snackbars />
-    <router-view v-if="!isUserLoggedIn || isStaticPage" />
-    <div v-else>
-      <user-main />
-    </div>
+    <!-- The app shipped with no landmark element at all, so assistive tech had
+         no way to skip the header and reach content. -->
+    <main>
+      <router-view v-if="!isUserLoggedIn || isStaticPage" />
+      <div v-else>
+        <user-main />
+      </div>
+    </main>
   </div>
 </template>
 

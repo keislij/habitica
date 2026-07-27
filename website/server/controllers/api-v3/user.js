@@ -21,6 +21,7 @@ import {
 import * as inboxLib from '../../libs/inbox';
 import * as userLib from '../../libs/user';
 import deleteAccount from '../../libs/user/deleteAccount';
+import { paymentConstants } from '../../libs/payments/constants';
 import { model as UserHistory } from '../../models/userHistory';
 
 const TECH_ASSISTANCE_EMAIL = nconf.get('EMAILS_TECH_ASSISTANCE_EMAIL');
@@ -290,7 +291,17 @@ api.deleteUser = {
     const { feedback } = req.body;
     if (feedback && feedback.length > 10000) throw new BadRequest(`Account deletion feedback is limited to 10,000 characters. For lengthy feedback, email ${TECH_ASSISTANCE_EMAIL}.`); // @TODO localize this string
 
-    if (plan && plan.customerId && !plan.dateTerminated) {
+    // The self-host stack grants every account a free subscription at
+    // registration using upstream's reserved UNLIMITED_CUSTOMER_ID, so this
+    // guard matched every user and made account deletion impossible -- the
+    // error tells you to "cancel your plan first", but there is no plan to
+    // cancel and no billing surface to cancel it on. A granted plan is not a
+    // paid one; a real customerId is still protected.
+    if (
+      plan && plan.customerId
+      && plan.customerId !== paymentConstants.UNLIMITED_CUSTOMER_ID
+      && !plan.dateTerminated
+    ) {
       throw new NotAuthorized(res.t('cannotDeleteActiveAccount'));
     }
 

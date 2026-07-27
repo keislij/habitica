@@ -1,10 +1,11 @@
 <template>
-  <div class="row">
-    <div class="col-6 text-center mx-auto mb-5">
+  <div class="row not-found-row">
+    <div class="col-12 col-md-6 text-center mx-auto mb-5">
       <!-- @TODO i18n. How to setup the strings with the router-link inside?-->
       <img
         :class="retiredChatPage ? 'mt-5' : 'image-404'"
         src="@/assets/images/404.png"
+        alt=""
       >
       <div v-if="retiredChatPage">
         <h1>
@@ -73,6 +74,19 @@ p {
 
 .image-404 {
   margin-top: 104px;
+  max-width: 100%;
+  height: auto;
+}
+
+// A bare .row carries Bootstrap's negative gutters, and with no .container to
+// absorb them the page overflowed 12px horizontally at every iPad width. That
+// pushed the page's own "Enter Habitica" escape button off the right edge at
+// 810px, reachable only via the overflow scrollbar -- so the 404 trapped you.
+// col-6 also stayed half-width on a tablet; it is now full-width below md.
+.not-found-row {
+  margin-left: 0;
+  margin-right: 0;
+  overflow-x: hidden;
 }
 
 </style>

@@ -428,10 +428,17 @@
     transition: none;
   }
 
+  // Was outline:none with only a 1px border as the focus cue, which is easy to
+  // miss and shifts layout. A real focus ring, and only for keyboard users so
+  // it does not fire on every tap.
   *:focus {
-    outline: none;
     transition: none;
     border: $purple-400 solid 1px;
+  }
+
+  *:focus-visible {
+    outline: 2px solid $purple-400;
+    outline-offset: 2px;
   }
 
   .control-bottom-box {
