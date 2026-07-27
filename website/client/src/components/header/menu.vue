@@ -273,15 +273,11 @@
               </router-link>
             </div>
           </li>
-          <!-- Help is hidden on this instance. Both entries route to /static/*
-               pages that replace the whole app chrome with Habitica's public
-               marketing layout -- Tumblr, a blog, a press kit and a mailto to
-               habitica.com's admin -- and the only way back is a small "Enter
-               Habitica" button. A child tapping Help was ejected out of the
-               chore app into somebody else's product. What the columns mean is
-               now explained by the empty-state copy instead. -->
+          <!-- Help stays. Its FAQ and "Overview for New Users" are real
+               onboarding for children learning this system, and removing useful
+               documentation to avoid an ugly layout is the wrong trade -- the
+               static pages do offer a way back. -->
           <li
-            v-if="false"
             class="topbar-item droppable"
             :class="{
               'active': $route.path.startsWith('/help')}"
