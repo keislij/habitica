@@ -18,9 +18,9 @@ import {
   getUserInfo,
   sendTxn,
 } from '../../libs/email';
-import worker from '../../libs/worker';
 import * as inboxLib from '../../libs/inbox';
 import * as userLib from '../../libs/user';
+import deleteAccount from '../../libs/user/deleteAccount';
 import { model as UserHistory } from '../../models/userHistory';
 
 const TECH_ASSISTANCE_EMAIL = nconf.get('EMAILS_TECH_ASSISTANCE_EMAIL');
@@ -294,6 +294,8 @@ api.deleteUser = {
       throw new NotAuthorized(res.t('cannotDeleteActiveAccount'));
     }
 
+    await deleteAccount(user);
+
     if (feedback) {
       sendTxn({ email: TECH_ASSISTANCE_EMAIL }, 'admin-feedback', [
         { name: 'PROFILE_NAME', content: user.profile.name },
@@ -304,15 +306,6 @@ api.deleteUser = {
         { name: 'FEEDBACK', content: feedback },
       ]);
     }
-
-    worker.sendJob('deleteUser', {
-      identifier: user._id,
-      data: {
-        userId: user._id,
-        deleteAccount: true,
-        deleteAmplitude: true,
-      },
-    });
 
     res.respond(200, {});
   },
@@ -358,6 +351,7 @@ api.getUserAnonymized = {
       delete user.auth.facebook;
       delete user.auth.google;
       delete user.auth.apple;
+      delete user.auth.oidc;
     }
     delete user.newMessages;
     delete user.profile;

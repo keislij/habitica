@@ -54,6 +54,9 @@ export const UserSchema = new Schema({
       default: () => ({}),
     },
     apple: { $type: Schema.Types.Mixed, default: () => ({}) },
+    // Self-host OIDC (authentik) linkage: {id: <sub>, email, linkedAt}.
+    // Login-only identity — not part of the shared social-network machinery.
+    oidc: { $type: Schema.Types.Mixed, default: () => ({}) },
     local: {
       email: {
         $type: String,
