@@ -533,9 +533,9 @@
 
 <script>
 import axios from 'axios';
-import PrivacyBanner from '@/components/header/banners/privacy';
 import debounce from 'lodash/debounce';
 import isEmail from 'validator/es/lib/isEmail';
+import PrivacyBanner from '@/components/header/banners/privacy';
 import notifications from '@/mixins/notifications';
 import sanitizeRedirect from '@/mixins/sanitizeRedirect';
 import accountCreation from '@/mixins/accountCreation';
