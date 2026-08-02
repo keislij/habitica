@@ -1,77 +1,37 @@
-# Habitica workspace operating rules
+# habitica
 
-## Scope and repository model
+Meta-workspace (control plane) for a private, self-hosted Habitica deployment. It versions
+operating rules, runbooks (`docs/`), and helper scripts around two git-ignored, independent
+checkouts: `habitica/` (the `keislij/habitica` fork on upstream `develop`) and `habitica-wiki/`
+(clone of the official GitHub wiki). Production deploys happen from `kt-gitops`, never from here.
 
-This directory is a control repository containing two ignored, independent Git
-repositories:
+## Stack & commands
 
-- `habitica/`: application fork
-- `habitica-wiki/`: official GitHub wiki clone
+Bash workspace scripts only. The nested app checkout uses Node 20 + npm 10 via `fnm` and
+MongoDB (started from `habitica/docker-compose.mongo-only.yml`). No workspace-level build or
+test suite — app builds/tests run inside `habitica/` per its own instructions.
 
-Always identify the target repository before editing. Preserve unrelated user
-changes. Start Codex from this workspace root so project agents are available.
+    ./scripts/verify-workspace.sh      # verify nested repos, remotes, push guards, fnm/Node 20
+    ./scripts/sync-upstreams.sh        # fetch --prune all remotes; never merges or checks out
+    ./scripts/bootstrap-dev-config.sh  # seed habitica/config.json from config.json.example
+    ./scripts/index-fandom-docs.sh     # regenerate docs/generated/ wiki index
 
-## Read order
+## Conventions (not tooling-enforced)
 
-Before material work, read:
+- Never submit AI-generated code, tests, docs, or assets upstream to Habitica (upstream policy).
+- Never push to the `upstream` or `selfhost` remotes — their push URLs are intentionally
+  `DISABLED`. Push the private fork (`origin`) only when explicitly requested.
+- Identify the target repository before editing; never run a workspace-wide commit or
+  dependency command across the nested checkouts.
+- Never commit secrets, API tokens, populated env files, DB dumps, or `habitica/config.json`.
+- Read `docs/STATUS.md` before material work; record verification evidence there afterwards.
+- Production changes belong in `kt-gitops` (immutable digests, guarded reconcile); do not
+  deploy from upstream development Compose files.
+- Prefer the wiki checkout / official GitHub docs over Fandom's older Node/Docker
+  instructions when they conflict.
 
-1. this file and `docs/STATUS.md`;
-2. the relevant document in `docs/`;
-3. the target repository's `README.md`, instructions, and pinned manifests;
-4. current official source documentation listed in `docs/SOURCES.md`;
-5. `/opt/GITProjects/knowledge_base` and `/opt/GITProjects/kt-gitops`
-   contracts for estate or deployment work.
+## Deeper docs
 
-Do not treat Fandom's older Node/Docker instructions as current when they
-conflict with the application repository or official GitHub wiki.
-
-## Hard boundaries
-
-- Never submit AI-generated code, tests, docs, or assets upstream to Habitica.
-- Never push to `upstream` or `selfhost`; their push URLs are intentionally
-  disabled. Push private-fork changes only when explicitly requested.
-- Never commit secrets, API tokens, populated environment files, database
-  dumps, or `habitica/config.json`.
-- Stay out of wall-tablet repositories and environments unless explicitly
-  re-included.
-- Do not replace or disrupt the existing Alchemy chore/reward system without an
-  explicit migration decision and rollback plan.
-- Do not deploy from upstream development Compose files.
-
-## Development
-
-Use Node 20 and npm 10 through `fnm`; follow the committed npm lockfiles. Start
-MongoDB with `habitica/docker-compose.mongo-only.yml`. Use focused tests first,
-then lint, build, sanity, and client unit checks as proportional validation.
-Record meaningful verification evidence in `docs/STATUS.md`.
-
-The ignored local config is development-only. Do not convert placeholder
-payment/social keys into real credentials unless the corresponding feature is
-being deliberately configured.
-
-## Self-hosting and estate integration
-
-Production changes belong in `kt-gitops`, use immutable image digests, external
-secret management, health checks, routed verification, and guarded reconcile.
-Traefik file-provider configuration is authoritative; do not add container
-labels as a second source of truth. A dedicated or resized LXC is preferred over
-silently crowding the current custom-apps host.
-
-No service is production-ready until restore testing, Mongo replica consistency,
-workers/cron, mail behavior, observability, upgrade/rollback, and native/mobile
-client behavior are proven.
-
-## Home Assistant
-
-Validate Home Assistant's native Habitica integration against the self-host URL
-first. Use a dedicated least-privilege Habitica account/token. Respect API rate
-limits and identify every automated client. Add a bridge only for confirmed
-event, identity, or workflow gaps; it must authenticate, queue, deduplicate, and
-avoid feedback loops.
-
-## Agent use
-
-Delegate bounded parallel work to the specialists in `.codex/agents/`. Agents
-must return evidence, distinguish facts from proposals, and respect all hard
-boundaries. The primary agent owns synthesis and any cross-repository mutation.
-
+- `agent_docs/workspace-rules.md` — full read order, hard boundaries, self-hosting/estate
+  rules, Home Assistant integration rules, agent-use policy.
+- `docs/` — STATUS, DEVELOPMENT, SELF_HOSTING, ARCHITECTURE, HOME_ASSISTANT, SOURCES, DECISIONS.
