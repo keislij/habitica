@@ -1,6 +1,15 @@
 # Onboarding status
 
-Last updated: 2026-07-27.
+Last updated: 2026-07-27. **Frozen 2026-08-11 — see decommission banner below; nothing on this page reflects live state after that date.**
+
+> **DECOMMISSIONED (2026-08-11).** Production CT1290 was destroyed, the
+> `chores.tekeis.net` Traefik route and authentik app were removed, and the
+> `kt-gitops` declarations were merged out on `main`. Data was preserved to
+> NAS `Project-Planning/claude-reports/habitica-decommission-20260811/`
+> (mongodump, final CT vzdump, fork branch git bundle). See the repo
+> [README](../README.md) for the full decommission record. Everything below
+> this line is a historical record of the onboarding/production stand-up as
+> it existed through 2026-08-11 — it is not current state.
 
 ## Complete
 
@@ -13,9 +22,9 @@ Last updated: 2026-07-27.
 - Lint, production client build, sanity, and client unit checks passed
 - Sources, architecture, self-host stages, HA path, and specialist agents defined
 
-## Deployed (Stage 2 complete)
+## Deployed (Stage 2 complete) — historical, decommissioned 2026-08-11
 
-Production is live as **`5.48.7-selfhost.21`** from the
+Production was live as **`5.48.7-selfhost.21`** from the
 `private/selfhost-patches-v5.48.7` branch (source commit `bbad6850`), built into
 immutable Forgejo image digests and deployed through the guarded `kt-gitops`
 reconcile.

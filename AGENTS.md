@@ -3,7 +3,11 @@
 Meta-workspace (control plane) for a private, self-hosted Habitica deployment. It versions
 operating rules, runbooks (`docs/`), and helper scripts around two git-ignored, independent
 checkouts: `habitica/` (the `keislij/habitica` fork on upstream `develop`) and `habitica-wiki/`
-(clone of the official GitHub wiki). Production deploys happen from `kt-gitops`, never from here.
+(clone of the official GitHub wiki). **DECOMMISSIONED 2026-08-11** — see the
+repo README for the full record; CT1290, the `chores.tekeis.net` route, and
+the `kt-gitops` declarations were torn down and no production deployment
+target remains. While the service was live, production deploys happened from
+`kt-gitops`, never from here.
 
 ## Stack & commands
 
